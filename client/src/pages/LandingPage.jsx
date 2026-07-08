@@ -7,10 +7,10 @@ export default function LandingPage() {
     <>
       <div className="min-h-screen w-full bg-gray-900 text-white p-6 text-xl">
         <section className="flex justify-end gap-12 pb-12">
-          <Link to="login" className="text-blue-500 cursor-pointer hover:scale-105 transition-all duration-300 hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(244,144,182,0.8)]">
+          <Link to="/landingpage/login" className="text-blue-500 cursor-pointer hover:scale-105 transition-all duration-300 hover:text-cyan-300 hover:drop-shadow-[0_0_15px_rgba(244,144,182,0.8)]">
             Login
           </Link>
-          <Link to="signup" className="cursor-pointer hover:scale-105 transition-all duration-300 hover:text-pink-300 hover:drop-shadow-[0_0_15px_rgba(244,114,182,0.8)]">
+          <Link to="/landingpage/signup" className="cursor-pointer hover:scale-105 transition-all duration-300 hover:text-pink-300 hover:drop-shadow-[0_0_15px_rgba(244,114,182,0.8)]">
             Signup
           </Link>
         </section>

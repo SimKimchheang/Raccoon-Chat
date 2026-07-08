@@ -1,26 +1,26 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Registration from './pages/Registration'
-import LandingPage from './pages/LandingPage'
-import Login from './pages/Login'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import Registration from './pages/Registration';
+import Login from './pages/Login'; 
 
 function App() {
-
   return (
-    <>
-      <Router>
-        <Routes>
-          {/* Redirects the root path (/) automatically to /landingpage */}
-          <Route path="/" element={<Navigate to="/landingpage" replace />} />
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/landingpage" replace />} />
 
-          {/* Your standard clean routes */}
-          <Route path='/landingpage' element={<LandingPage/>}></Route>
+        {/* Parent Route */}
+        <Route path="/landingpage">
 
-          <Route path="/landingpage/signup" element={<Registration />} />
-          <Route path="/landingpage/login" element={<Login />} />
-        </Routes>
-      </Router>
-    </>
-  )
+          <Route index element={<LandingPage />} />
+          <Route path="signup" element={<Registration />} />
+          <Route path="login" element={<Login />} />
+          
+        </Route>
+
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
