@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/LandingPage';
 import Registration from './pages/Registration';
 import Login from './pages/Login'; 
+import Home from './pages/Home';
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
           <Route path="login" element={<Login />} />
           
         </Route>
-
+        <Route path="/home" element={<Home />} />
       </Routes>
     </Router>
   );
