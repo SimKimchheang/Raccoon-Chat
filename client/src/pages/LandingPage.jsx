@@ -1,8 +1,22 @@
-import { Link } from 'react-router-dom'
-import raccoonImg from '../assets/raccoon.png'
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../services/firebase';
+import raccoonImg from '../assets/raccoon.png';
 
 export default function LandingPage() {
-    
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        navigate('/home', { replace: true });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
   return (
     <>
       <div className="min-h-screen w-full bg-gray-900 text-white p-6 text-xl">
@@ -27,5 +41,5 @@ export default function LandingPage() {
         </section>
       </div>
     </>
-  )
+  );
 }

@@ -137,16 +137,15 @@ export default function Home() {
         className='p-6'
       > 
         <button
-        className='cursor-pointer'
-        onClick={() => setIsOpen(!isOpen)}>
+          className='cursor-pointer'
+          onClick={() => setIsOpen(!isOpen)}
+        >
           ☰
         </button>
 
         {/* Is Opened */}
         <section className="grid gap-4 place-items-center">
-
           <div className="relative">
-
             {user.photoURL ? (
               <img
                 src={user.photoURL}
@@ -162,12 +161,11 @@ export default function Home() {
             <label
               htmlFor="avatar-upload"
               className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4
-                        rounded-full bg-indigo-600 px-3 py-1 text-xs text-white
-                        cursor-pointer hover:bg-indigo-500"
+                rounded-full bg-indigo-600 px-3 py-1 text-xs text-white
+                cursor-pointer hover:bg-indigo-500"
             >
               Upload
             </label>
-
           </div>
 
           <input
@@ -181,9 +179,21 @@ export default function Home() {
           <h2 className="text-center text-lg font-semibold">
             {displayName}
           </h2>
-
+          {/* -------------------------- Sign Out ---------------------- */}
+          <span
+            className='text-red-600 text-lg cursor-pointer hover:text-red-400 transition-colors'
+            onClick={async () => {
+              try {
+                await auth.signOut();
+                navigate("/landingpage/login");
+              } catch (error) {
+                console.error("Error signing out:", error);
+              }
+            }} 
+          >
+          Sign Out
+          </span>
         </section>
-
       </div>
     </section>
 

@@ -1,5 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 import { auth } from '../services/firebase.js';
 import { useState } from "react";
 
@@ -7,6 +12,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -15,14 +21,15 @@ export default function Login() {
 
         try {
             if (!email || !password) {
-                setError("All fields are required");
-                return;
+              setError("All fields are required");
+              return;
             }
 
+            await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            
             if (userCredential.user) {
-                navigate("/home");
+              navigate("/home");
             }
         } catch (err) {
             if (err.code === "auth/user-not-found") {
@@ -66,6 +73,16 @@ export default function Login() {
               placeholder="Enter your password"
               className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-purple-500 text-white transition-all placeholder-gray-400"
               />
+          </div>
+
+          <div>
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <label htmlFor="rememberMe"> Remember me</label>
           </div>
 
           {/* Submit Button */}
