@@ -14,7 +14,7 @@ export default function AuthRedirect() {
     }, []);
 
     if (user === undefined) {
-        return <div>Loading...</div>
+      return <div>Loading...</div>
     }
 
     return <Navigate to='/landingpage' replace />;

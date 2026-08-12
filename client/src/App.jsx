@@ -4,6 +4,7 @@ import Registration from './pages/Registration';
 import Login from './pages/Login'; 
 import Home from './pages/Home';
 import AuthRedirect from './components/AuthRedirect';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -18,7 +19,10 @@ function App() {
           <Route path="login" element={<Login />} />
         </Route>
         
-        <Route path="/home" element={<Home />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+        </Route>        
+
       </Routes>
     </Router>
   );
