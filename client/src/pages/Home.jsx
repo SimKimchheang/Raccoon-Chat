@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { auth, db, storage } from '../services/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
@@ -15,53 +15,13 @@ export default function Home() {
 
   const displayName = user.username || user.email?.split('@')[0] || 'User';
   console.log('user:', user);
-  async function handleAvatarClick(e) {
-    const file = e.target.files[0];
-    console.log("Selected file:", file);
-    if (!file) return;
-    const currentUser = auth.currentUser;
-    console.log("Current user:", currentUser);
-    if (!currentUser) return;
-    try {
-      const storageRef = ref(
-        storage,
-        `avatars/${currentUser.uid}/${file.name}`
-      );
-      console.log("Uploading...");
-      await uploadBytes(storageRef, file);
-      console.log("Upload successful!");
-      const photoURL = await getDownloadURL(storageRef);
-      console.log("Photo URL:", photoURL);
 
-      await setDoc(
-        doc(db, "users", currentUser.uid),
-        {
-          photoURL: photoURL
-        },
-        { merge: true }
-      );
-
-      await updateProfile(currentUser, {
-        photoURL: photoURL
-      });
-
-      console.log("Firestore updated!");
-
-      setUser(prev => ({
-        ...prev,
-        photoURL: photoURL
-      }));
-
-      console.log("User state updated!");
-
-    } catch (error) {
-      console.error("Avatar upload failed:", error);
-    }
-  }
   const [isOpen, setIsOpen] = useState(false);
   const openSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  // ----------------------------------------------------------------
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -87,10 +47,18 @@ export default function Home() {
     return () => unsubscribe();
   }, [navigate]);
 
+  // ----------------------------------------------------------------
+
+  const [openProfile, setOpenProfile] = useState(false);
+  const setRightSidebar = () => {
+    setOpenProfile(!openProfile);
+  }
+
+
  return (
   <div className="h-screen w-full bg-gray-900 text-white flex overflow-hidden">
 
-    {/* Left Sidebar */}
+    {/* ------------------------- Left Sidebar ------------------------- */}
     <section className="w-80 min-w-[20rem] flex flex-col bg-gray-800 p-6 overflow-hidden">
 
       {/* Search Section*/}
@@ -107,26 +75,44 @@ export default function Home() {
         />
       </div>
 
-      {/* Group Chat Section */}
+      {/* --------------------- Group Chat Section ------------------*/}
       <div 
         className="mt-4 flex-1 overflow-y-auto thin-scrollbar" >
-        {Array.from({ length: 90 }).map((_, i) => (
+        {Array.from({ length: 10 }).map((_, i) => (
           <p key={i}>{i}</p>
         ))}
       </div>
     </section>
 
-    {/* Right Sidebar */}
-    <section className="flex-1 flex flex-col overflow-hidden p-6">
-      <h1 className="text-3xl mb-4">Hello</h1>
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
-        {Array.from({ length: 100 }).map((_, i) => (
-          <p key={i}>Message {i + 1}</p>
-        ))}
+    {/* ----------------------- Right Sidebar ----------------------- */}
+    <section className="flex-1 flex flex-col overflow-hidden p-2">
+
+      {/* ----------------------- Top Right Navigate --------------------- */}
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="text-2xl font-bold text-purple-500">Raccoon</h1>
+        <div className="flex items-center gap-4 cursor-pointer">
+          <div className="relative">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover border border-gray-700"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-2xl font-bold text-white">
+                {(displayName || "Me")[0].toUpperCase()}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <Outlet />
       </div>
     </section>
 
-    {/* Left Sidebar Nav */}
+    {/* ----------------------- Left Sidebar Nav --------------------- */}
     <section
       className={`absolute top-0 left-0 h-screen w-80
       bg-gray-800 shadow-xl z-50
@@ -145,57 +131,19 @@ export default function Home() {
 
         {/* Is Opened */}
         <section className="grid gap-4 place-items-center">
-          <div className="relative">
-            {user.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt="Profile"
-                className="w-24 h-24 rounded-full object-cover border border-gray-700"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center text-4xl font-bold text-white">
-                {(displayName || "Me")[0].toUpperCase()}
-              </div>
-            )}
 
-            <label
-              htmlFor="avatar-upload"
-              className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4
-                rounded-full bg-indigo-600 px-3 py-1 text-xs text-white
-                cursor-pointer hover:bg-indigo-500"
-            >
-              Upload
-            </label>
-          </div>
-
-          <input
-            id="avatar-upload"
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarClick}
-            className="hidden"
-          />
-
-          <h2 className="text-center text-lg font-semibold">
-            {displayName}
-          </h2>
-          {/* -------------------------- Sign Out ---------------------- */}
-          <span
-            className='text-red-600 text-lg cursor-pointer hover:text-red-400 transition-colors'
-            onClick={async () => {
-              try {
-                await auth.signOut();
-                navigate("/landingpage/login");
-              } catch (error) {
-                console.error("Error signing out:", error);
-              }
-            }} 
+          {/* -------------------------- Profile Link ----------------------- */}
+          <Link
+            to='/home/profile'
+            className='text-blue-500 cursor-pointer hover:text-blue-300'
           >
-          Sign Out
-          </span>
+            Profile
+          </Link>
+
         </section>
       </div>
     </section>
+
 
   </div>
  )

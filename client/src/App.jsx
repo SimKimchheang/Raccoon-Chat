@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage';
 import Registration from './pages/Registration';
 import Login from './pages/Login'; 
 import Home from './pages/Home';
+import Profile from './pages/Profile';
 import AuthRedirect from './components/AuthRedirect';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -20,7 +21,10 @@ function App() {
         </Route>
         
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<Home />}>
+            <Route path="profile" element={<Profile />} />
+          </Route>
+
         </Route>        
 
       </Routes>
