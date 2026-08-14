@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../services/firebase.js';
+import { auth, db } from '../../services/firebase.js';
 
 export default function Registration() {
   const [username, setUsername] = useState("");
@@ -19,6 +19,12 @@ export default function Registration() {
     await updateProfile(user, {
       displayName: username
     });
+
+    await sendEmailVerification(user);
+    if(!user.emailVerified) {
+      console.log('Email verification sent to:', user.email);
+      return;
+    }
 
     await setDoc(doc(db, 'users', user.uid), {
       username,

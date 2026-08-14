@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import Registration from './pages/Registration';
-import Login from './pages/Login'; 
-import Home from './pages/Home';
-import Profile from './pages/Profile';
 import AuthRedirect from './components/AuthRedirect';
 import ProtectedRoute from './components/ProtectedRoute';
+
+import LandingPage from './pages/auth/LandingPage';
+import Registration from './pages/auth/Registration';
+import Login from './pages/auth/Login'; 
+import Home from './pages/Home';
+import Profile from './pages/profile/Profile';
+import Settings from './pages/profile/Settings';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/home" element={<Home />}>
             <Route path="profile" element={<Profile />} />
           </Route>
+
+          <Route path='/home/profile/settings' element={<Settings />} />
 
         </Route>        
 

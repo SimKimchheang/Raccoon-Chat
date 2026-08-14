@@ -1,25 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
-import { auth, db, storage } from '../services/firebase';
+import { auth, db } from '../services/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { onAuthStateChanged, reload, updateProfile } from 'firebase/auth';
 
 export default function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
     username: auth.currentUser?.displayName || '',
     email: auth.currentUser?.email || '',
-    photoURL: auth.currentUser?.photoURL || ''
   });
 
   const displayName = user.username || user.email?.split('@')[0] || 'User';
   console.log('user:', user);
-
-  const [isOpen, setIsOpen] = useState(false);
-  const openSidebar = () => {
-    setIsOpen(!isOpen);
-  };
 
   // ----------------------------------------------------------------
 
@@ -31,16 +24,19 @@ export default function Home() {
         return;
       }
 
+      await reload(currentUser);
+      console.log('AUTH EMAIL:', currentUser.email);
       console.log("Logged in:", currentUser.uid);
 
       const docRef = doc(db, "users", currentUser.uid);
       const docSnap = await getDoc(docRef);
       const docData = docSnap.exists() ? docSnap.data() : {};
 
+      console.log('FIRESTORE EMAIL:', docData.email);
+
       setUser({
         username: docData.username || currentUser.displayName || '',
-        email: docData.email || currentUser.email || '',
-        photoURL: docData.photoURL || currentUser.photoURL || ''
+        email: currentUser.email || '',
       });
     });
 
@@ -48,12 +44,15 @@ export default function Home() {
   }, [navigate]);
 
   // ----------------------------------------------------------------
+  const [isOpen, setIsOpen] = useState(false);
+  const openSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
-  const [openProfile, setOpenProfile] = useState(false);
-  const setRightSidebar = () => {
-    setOpenProfile(!openProfile);
+  const [openProfileMenu, setOpenProfileMenu] = useState(false);
+  const setRightMenu = () => {
+    setOpenProfileMenu(!openProfileMenu);
   }
-
 
  return (
   <div className="h-screen w-full bg-gray-900 text-white flex overflow-hidden">
@@ -90,7 +89,10 @@ export default function Home() {
       {/* ----------------------- Top Right Navigate --------------------- */}
       <div className="flex justify-between items-center mb-2">
         <h1 className="text-2xl font-bold text-purple-500">Raccoon</h1>
-        <div className="flex items-center gap-4 cursor-pointer">
+
+        <div className="flex items-center gap-4 cursor-pointer"
+          onClick={() => setRightMenu(!openProfileMenu)}
+        >
           <div className="relative">
             {user.photoURL ? (
               <img
@@ -107,12 +109,22 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ----------------------- Right Sidebar Menu --------------------- */}
+      {openProfileMenu && (
+        <div className="absolute top-12 right-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-4 z-50">
+          <Link to='/home/profile' className="text-white hover:text-purple-500">
+            Profile
+          </Link>
+        </div>
+      )}
+
+      {/* --------------------------- Content ---------------------------- */}
       <div>
         <Outlet />
       </div>
     </section>
 
-    {/* ----------------------- Left Sidebar Nav --------------------- */}
+    {/* ----------------------- Left Sidebar Nav ------------------------- */}
     <section
       className={`absolute top-0 left-0 h-screen w-80
       bg-gray-800 shadow-xl z-50
@@ -131,14 +143,6 @@ export default function Home() {
 
         {/* Is Opened */}
         <section className="grid gap-4 place-items-center">
-
-          {/* -------------------------- Profile Link ----------------------- */}
-          <Link
-            to='/home/profile'
-            className='text-blue-500 cursor-pointer hover:text-blue-300'
-          >
-            Profile
-          </Link>
 
         </section>
       </div>

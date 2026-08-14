@@ -5,7 +5,7 @@ import {
   browserLocalPersistence,
   browserSessionPersistence,
 } from "firebase/auth";
-import { auth } from '../services/firebase.js';
+import { auth } from '../../services/firebase.js';
 import { useState } from "react";
 
 export default function Login() {
