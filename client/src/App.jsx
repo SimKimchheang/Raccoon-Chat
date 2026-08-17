@@ -8,6 +8,7 @@ import Login from './pages/auth/Login';
 import Home from './pages/Home';
 import Profile from './pages/profile/Profile';
 import Settings from './pages/profile/Settings';
+import EmailAndPassword from './pages/profile/EmailAndPassword';
 
 function App() {
   return (
@@ -17,18 +18,22 @@ function App() {
 
         {/* Parent Route */}
         <Route path="/landingpage">
+
           <Route index element={<LandingPage />} />
           <Route path="signup" element={<Registration />} />
           <Route path="login" element={<Login />} />
+
         </Route>
         
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<Home />}>
-          </Route>
+
+          <Route path="/home" element={<Home />} />
           <Route path="/home/profile" element={<Profile />} />
+          <Route path='/home/profile/settings' element={<Settings />}>
+          
+            <Route path='/home/profile/settings/emailAndPassword' element={<EmailAndPassword />} />
 
-          <Route path='/home/profile/settings' element={<Settings />} />
-
+          </Route>
         </Route>        
 
       </Routes>
