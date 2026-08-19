@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PersonalInformation from "./PersonalInformation";
 import EmailAndPassword from "./EmailAndPassword";
+import Social from "./Social";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -22,6 +23,7 @@ export default function Settings() {
   const navItems = [
     { id: "personal", label: "Personal Information" },
     { id: "security", label: "Email & Password" },
+    { id: "social", label: "Social Accounts"}
   ];
 
   return (
@@ -69,6 +71,7 @@ export default function Settings() {
       <main className="flex-1 overflow-y-auto p-10">
         {activeTab === "personal" && <PersonalInformation />}
         {activeTab === "security" && <EmailAndPassword />}
+        {activeTab === "social" && <Social/>}
       </main>
     </div>
   );

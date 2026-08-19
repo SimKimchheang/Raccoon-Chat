@@ -8,7 +8,6 @@ import Login from './pages/auth/Login';
 import Home from './pages/Home';
 import Profile from './pages/profile/Profile';
 import Settings from './pages/profile/Settings';
-import EmailAndPassword from './pages/profile/EmailAndPassword';
 
 function App() {
   return (
@@ -31,7 +30,6 @@ function App() {
           <Route path="/home/profile" element={<Profile />} />
           <Route path='/home/profile/settings' element={<Settings />}>
           
-            <Route path='/home/profile/settings/emailAndPassword' element={<EmailAndPassword />} />
 
           </Route>
         </Route>        

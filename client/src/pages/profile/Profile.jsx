@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProfileOverview from "./ProfileOverview";
 import AccountDetails from "./AccountDetails";
+import { Settings, Crown, LogOut } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -60,7 +61,7 @@ export default function Profile() {
         {/* Account Status */}
         <div className="space-y-3 mb-6">
           {user?.emailVerified ? (
-            <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded text-green-400 text-sm">
+            <div className="flex pl-5 items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded text-green-400 text-sm">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               Email Verified
             </div>
@@ -73,7 +74,9 @@ export default function Profile() {
           
           {user?.email === 'chheang097kim@gmail.com' && (
             <div className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded text-blue-400 text-sm">
-              <span className="text-lg">👑</span>
+              <span className="text-lg pl-1">
+                <Crown size={18}/>
+              </span>
               Admin Account
             </div>
           )}
@@ -82,9 +85,9 @@ export default function Profile() {
         <div className='py-3 border-t border-slate-700 space-y-2'>
           <button 
             onClick={() => navigate('/home/profile/settings')}
-            className='w-full text-left px-4 py-2 bg-slate-700/50 hover:bg-slate-700 rounded text-slate-300 hover:text-purple-400 transition-colors font-medium'
+            className='flex items-center gap-2 w-full text-left px-4 py-2 bg-slate-700/50 hover:bg-slate-700 rounded text-slate-300 hover:text-purple-400 transition-colors font-medium'
           >
-            ⚙️ Settings
+            <Settings size={18}/> Settings
           </button>
         </div>
 
@@ -98,9 +101,9 @@ export default function Profile() {
               console.error("Error signing out:", error);
             }
           }} 
-          className='w-full mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded text-red-400 hover:text-red-300 transition-all font-medium'
+          className='flex items-center gap-2 w-full mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded text-red-400 hover:text-red-300 transition-all font-medium'
         >
-          Sign Out
+          <LogOut size={18}/> Sign Out
         </button>
       </aside>
 

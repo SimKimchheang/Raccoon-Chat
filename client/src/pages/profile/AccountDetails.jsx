@@ -23,7 +23,7 @@ export default function AccountDetails() {
               setBirthday(userData.birthday);
             }
             if (userData.country) {
-                setCountry(userData.country);
+              setCountry(userData.country);
             }
           }
         } catch (err) {

@@ -414,13 +414,13 @@ export default function PersonalInformation() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        {/* <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Account Status</label>
           <div className="mt-2 flex items-center gap-2">
             <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
             <p className="text-lg font-semibold text-green-400">Active</p>
           </div>
-        </div>
+        </div> */}
 
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Birthday</label>
