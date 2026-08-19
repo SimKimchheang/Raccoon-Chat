@@ -122,7 +122,29 @@ export default function Social() {
     } catch (error) {
       console.error("Failed to update:", error);
     }
-  };  
+  }; 
+  
+  const handleDelete = async (index) => {
+    const currentUser = auth.currentUser;
+    if(!currentUser) return;
+    try {
+      const updateLinks = socialLinks.filter(
+        (_, i) => i !== index
+      );
+      await setDoc(
+        doc(db, "users", currentUser.uid), 
+        {
+          socialLinks: updateLinks
+        },
+        { merge: true }
+      );
+      setSocialLinks(updateLinks);
+      setMessage("Social link deleted");
+      setMessageType('success');
+    } catch (error) {
+      console.log("Failed to delete social link:, error");
+    };
+  }
 
   return (
     <div className="max-w-2xl">
@@ -244,6 +266,7 @@ export default function Social() {
                 <button
                   type="button"
                   title="Delete"
+                  onClick={() => handleDelete(index)}
                   className="p-2 rounded-lg text-red-500 hover:text-red-400 hover:bg-slate-700 transition-colors"
                 >
                   <Trash2 size={18} />

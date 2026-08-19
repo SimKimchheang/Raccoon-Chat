@@ -35,6 +35,7 @@ export default function Profile() {
       } else {
         setUser(null);
       }
+      
     });
     return () => unsubscribe();
   }, []);

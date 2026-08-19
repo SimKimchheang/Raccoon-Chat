@@ -8,29 +8,29 @@ export default function AccountDetails() {
   const [birthday, setBirthday] = useState('');
   const [country, setCountry] = useState('');
   const [verificationSent, setVerification] = useState(false);
+  const [socialLinks, setSocialLinks] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        await reload(currentUser);
-        setUser(currentUser);
-
-        try {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            if (userData.birthday) {
-              setBirthday(userData.birthday);
-            }
-            if (userData.country) {
-              setCountry(userData.country);
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching birthday:", err);
-        }
-      } else {
+      if (!currentUser) {
         setUser(null);
+        setSocialLinks([]);
+        return;
+      }
+
+      await reload(currentUser);
+      setUser(currentUser);
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setBirthday(userData.birthday || "");
+          setCountry(userData.country || "");
+          setSocialLinks(userData.socialLinks || []);
+        }
+      } catch (err) {
+        console.error("Error fetching birthday:", err);
       }
     });
     return () => unsubscribe();
@@ -95,7 +95,7 @@ export default function AccountDetails() {
             <p className="text-lg font-semibold text-white mt-2">{birthday || 'Not set'}</p>
           </div>
 
-          <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
+          {/* <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
             <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
               Email Verification
             </label>
@@ -130,9 +130,44 @@ export default function AccountDetails() {
                 </>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
+
+      {socialLinks.length > 0 && (
+        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-8 hover:border-purple-500 transition-all mb-8">
+          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-6"
+            >Social Account
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3 my-4">
+              {socialLinks.map((social, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-slate-800 border border-slate-700 rounded-xl"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold text-purple-400">
+                        {social.title}
+                      </h3>
+
+                      <a
+                        href={social.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-purple-300 break-all"
+                      >
+                        {social.link}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
