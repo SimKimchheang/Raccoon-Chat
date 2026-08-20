@@ -1,7 +1,8 @@
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, or, setDoc } from "firebase/firestore";
+import { Pencil } from "lucide-react";
 
 export default function PersonalInformation() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,13 @@ export default function PersonalInformation() {
   const [messageB, setMessageB] = useState('');
   const [messageC, setMessageC] = useState('');
   const [messageBio, setMessageBio] = useState('');
+
+  const [originalUsername, setOriginalUsername] = useState('');
+  const [usernameToggle, setUsernameToggle] = useState(false);
+  const [orginalBio, setOrginalBio] = useState('');
+  const [bioToggle, setBioToggle] = useState(false);
+  const [originalBirthday, setOriginalBirthday] = useState('');
+  const [birthdayToggle, setBirthdayToggle] = useState(false);
 
   const countries = [
     { id: 'afghanistan', label: 'Afghanistan' },
@@ -298,17 +306,13 @@ export default function PersonalInformation() {
       setUsernameError("You must be logged in to update your username.");
       return;
     }
-
     const trimmedUsername = username.trim();
-
     if (!trimmedUsername) {
       setUsernameError("Username is required.");
       return;
     }
-
     setUsernameError("");
     setUsernameMessage("");
-
     try {
       await updateProfile(auth.currentUser, {
         displayName: trimmedUsername,
@@ -321,11 +325,44 @@ export default function PersonalInformation() {
       );
 
       setUser({ ...auth.currentUser, displayName: trimmedUsername });
+      
       setUsernameMessage("Username updated successfully.");
     } catch (err) {
       setUsernameError(err.message || "Failed to update username");
     }
   };
+
+// ------------------------- Timer ----------------------------------
+  useEffect(() => {
+    if (!usernameMessage) return;
+
+    const timer = setTimeout(() => {
+      setUsernameMessage("");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [usernameMessage]);
+
+  useEffect(() => {
+    if (!messageBio) return;
+
+    const timer = setTimeout(() => {
+      setMessageBio("");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [messageBio]);
+
+  useEffect(() => {
+    if (!messageB) return;
+
+    const timer = setTimeout(() => {
+      setMessageB('');
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [messageB]);
+
 
   // --------------------------- Bio -------------------------------------
   const MAX_BIO_LENGTH = 200; 
@@ -408,23 +445,49 @@ export default function PersonalInformation() {
 
       {/* Info Cards */}
       <div className="space-y-4">
+        {/* Username Card */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Username</label>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 grid items-center gap-3">
             <input
               type="text"
               value={username}
+              onClick={() => {
+                if (!usernameToggle) {
+                  setOriginalUsername('');
+                  setOriginalUsername(username);
+                  setUsernameToggle(true);
+                }
+              }}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               placeholder="Enter your username"
             />
-            <button
-              type="button"
-              onClick={handleUsernameSave}
-              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors whitespace-nowrap"
-            >
-              Save
-            </button>
+            {usernameToggle && (
+              <div className="flex gap-4">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setUsernameToggle(false);
+                    setUsername(originalUsername)
+                  }}
+                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUsernameSave();
+                    setUsernameToggle(false)
+                  }}
+                  className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors whitespace-nowrap"
+                >
+                  Update
+                </button>
+              </div>
+            )}
           </div>
           {usernameError && (
             <p className="text-red-500 text-sm mt-3">{usernameError}</p>
@@ -434,8 +497,8 @@ export default function PersonalInformation() {
           )}
         </div>
 
+        {/* Bio Card */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
-
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
               Bio
@@ -449,24 +512,45 @@ export default function PersonalInformation() {
           <textarea
             value={bio}
             maxLength={200}
+            onClick={() => {
+              setOrginalBio('');
+              setOrginalBio(bio);
+              setBioToggle(true);
+            }}
             onChange={(e) => setBio(e.target.value)}
             placeholder="Tell people something about you..."
             rows={4}
             className="thin-scrollbar w-full rounded-xl text-sm text-slate-300 border border-gray-600 bg-gray-800 px-4 py-3 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500 resize-none"
           />
 
-          <div className="flex justify-end mt-3">
-            <button
-              type="button"
-              onClick={handleBioSave}
-              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors"
-            >
-              Save
-            </button>
-          </div>
+          {bioToggle && (
+            <div className="flex gap-4 pt-2">
+              <button 
+                  type="button"
+                  onClick={() => {
+                    setBio(orginalBio)
+                    setBioToggle(false);
+                  }}
+                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleBioSave();
+                  setBioToggle(false);
+                }}
+                className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors"
+              >
+                Update
+              </button>            
+            </div>
+          )}
 
           {messageBio && (
-            <p className="text-sm text-slate-400 mt-3">
+            <p className="text-sm mt-3 text-green-500">
               {messageBio}
             </p>
           )}
@@ -481,23 +565,47 @@ export default function PersonalInformation() {
           </p>
         </div>
 
+          {/* Birthday Card */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Birthday</label>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 grid items-center gap-3">
             <input 
               id='birthday'
               type="date" 
               value={birthday}
+              onClick={() => {
+                setBirthdayToggle(true);
+                setOriginalBirthday('');
+                setOriginalBirthday(birthday);
+              }}
               onChange={(e) => setBirthday(e.target.value)}
               className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
             />
-            <button
-              type="button"
-              onClick={handleBirthdaySave}
-              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors whitespace-nowrap"
-            >
-              Save
-            </button>
+            {birthdayToggle && (
+              <div className="flex gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBirthday(originalBirthday);
+                    setBirthdayToggle(false);
+                  }}
+                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleBirthdaySave();
+                    setBirthdayToggle(false);
+                  }}
+                  className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors whitespace-nowrap"
+                >
+                  Update
+                </button>
+              </div>
+            )}
           </div>
           {error && (
             <p className="text-red-500 text-sm mt-3">{error}</p>
@@ -534,7 +642,7 @@ export default function PersonalInformation() {
               </button>
 
               {isCountryMenuOpen && (
-                <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 shadow-2xl">
+                <div className="absolute thin-scrollbar left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 shadow-2xl">
                   {countriesWithFlags.map((countryOption) => {
                     const isSelected = country === countryOption.id;
 

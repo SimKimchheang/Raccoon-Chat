@@ -1,19 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Merge } from "lucide-react";
 
 export default function AccountDetails() {
   const [user, setUser] = useState(null);
+  const [bio, setBio] = useState('');
+  const [status, setStatus] = useState('none');
   const [birthday, setBirthday] = useState('');
   const [country, setCountry] = useState('');
   const [verificationSent, setVerification] = useState(false);
   const [socialLinks, setSocialLinks] = useState([]);
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         setUser(null);
+        setBio('');
+        setBirthday('');
+        setCountry('');
         setSocialLinks([]);
         return;
       }
@@ -25,6 +32,8 @@ export default function AccountDetails() {
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          setBio(userData.bio || '');
+          setStatus(userData.status || 'none');
           setBirthday(userData.birthday || "");
           setCountry(userData.country || "");
           setSocialLinks(userData.socialLinks || []);
@@ -36,7 +45,36 @@ export default function AccountDetails() {
     return () => unsubscribe();
   }, []);
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const statusOptions = [
+    { id: "none", label: "None", emoji: "⚪" },
+    { id: "happy", label: "Happy", emoji: "😊" },
+    { id: "sad", label: "Sad", emoji: "😢" },
+    { id: "angry", label: "Angry", emoji: "😡" },
+    { id: "focus", label: "Focus", emoji: "🎯" },
+    { id: "busy", label: "Busy", emoji: "⛔" },
+    { id: "sleeping", label: "Sleeping", emoji: "😴" },
+    { id: "excited", label: "Excited", emoji: "🤩" },
+    { id: "chill", label: "Chilling", emoji: "😎" },
+    { id: "working", label: "Working", emoji: "💻" },
+  ];
+
+  const handleStatusChange = async (newStatus) => {
+    if (!user) return;
+
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          status: newStatus,
+        },
+        { merge: true }
+      );
+
+      setStatus(newStatus);
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
+  };
 
   return (
     <div>
@@ -46,13 +84,52 @@ export default function AccountDetails() {
           Account Details
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-col-1  gap-6 mb-5">
           <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
             <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
               Display Name
             </label>
             <p className="text-xl font-bold text-white mt-2">{displayName}</p>
+
+            {bio ? (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
+                  Bio
+                </label>
+                <p className="text-xs text-white mt-2">{bio}</p>
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
+                  Bio
+                </label>
+                <p className="text-xs text-white mt-2">This user hasn't created a bio yet.</p>
+              </div>
+            )}
+
+            <div className="mt-2 grid grid-cols-1 gap-3">
+              <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
+                Status
+              </label>
+
+              <select
+                value={status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                className="w-[300px] px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-purple-500"
+              >
+                {statusOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.emoji} {option.label}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
             <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
@@ -95,42 +172,6 @@ export default function AccountDetails() {
             <p className="text-lg font-semibold text-white mt-2">{birthday || 'Not set'}</p>
           </div>
 
-          {/* <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-            <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-              Email Verification
-            </label>
-            <div className="mt-3 space-y-2">
-              {user?.emailVerified ? (
-                <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">
-                  ✓ Verified
-                </span>
-              ) : (
-                <>
-                  <span className="inline-block px-3 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full font-medium">
-                    ⚠ Unverified
-                  </span>
-                  <button
-                    className="block w-full mt-2 px-3 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 rounded text-sm font-medium transition-all"
-                    onClick={async () => {
-                      try {
-                        await sendEmailVerification(user);
-                        setVerification(true);
-                      } catch (error) {
-                        console.error('Error sending verification email:', error);
-                      }
-                    }}
-                  >
-                    Verify Email
-                  </button>
-                  {verificationSent && (
-                    <p className="text-green-400 text-xs text-center animate-pulse">
-                      ✓ Verification email sent!
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </div> */}
         </div>
       </div>
 

@@ -108,7 +108,7 @@ export default function Profile() {
         </button>
       </aside>
 
-      <main className="flex-1 flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+      <main className="flex-1 thin-scrollbar flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Tab Navigation */}
         <div className="flex gap-4 px-10 pt-10 pb-4 border-b border-slate-700 bg-gradient-to-b from-slate-900 to-slate-900/50 flex-shrink-0 sticky top-0 z-10">
           {profileTabs.map((tab) => (
