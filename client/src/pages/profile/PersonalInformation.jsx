@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function PersonalInformation() {
   const [user, setUser] = useState(null);
+  const [bio, setBio] = useState('');
   const [birthday, setBirthday] = useState('');
   const [country, setCountry] = useState('');
   const [username, setUsername] = useState('');
@@ -15,6 +16,7 @@ export default function PersonalInformation() {
   const [usernameMessage, setUsernameMessage] = useState('');
   const [messageB, setMessageB] = useState('');
   const [messageC, setMessageC] = useState('');
+  const [messageBio, setMessageBio] = useState('');
 
   const countries = [
     { id: 'afghanistan', label: 'Afghanistan' },
@@ -277,13 +279,9 @@ export default function PersonalInformation() {
             setUsername(currentUser.displayName);
           }
 
-          if (userData.birthday) {
-            setBirthday(userData.birthday);
-          }
-
-          if (userData.country) {
-            setCountry(userData.country);
-          }
+          setBirthday(userData.birthday || '');
+          setCountry(userData.country || '');
+          setBio(userData.bio || '');
         }
       } catch (err) {
         console.error("Error fetching:", err);
@@ -329,6 +327,36 @@ export default function PersonalInformation() {
     }
   };
 
+  // --------------------------- Bio -------------------------------------
+  const MAX_BIO_LENGTH = 200; 
+  const handleBioSave = async () => {
+    if(!auth.currentUser) {
+      setError("You must be logged in to save your bio"); 
+      return;
+    }
+    const trimmedBio = bio.trim();
+    if (trimmedBio.length > MAX_BIO_LENGTH) {
+      setMessageBio(`Bio must be ${MAX_BIO_LENGTH} characters or less`);
+      return;
+    }
+
+    setMessageBio("");
+
+    try {
+      await setDoc(
+        doc(db, "users", auth.currentUser.uid),
+        { bio: trimmedBio},
+        { merge: true }
+      );
+
+      setBio(trimmedBio);
+      setMessageBio("Bio updated successfuly");
+    } catch (error) {
+      setMessageBio(error.messageBio || "Failed to update bio")
+    }
+  };
+
+  // ------------------------ Birthday --------------------------------------
   const handleBirthdaySave = async () => {
     if (!auth.currentUser) {
       setError("You must be logged in to save your birthday.");
@@ -348,7 +376,7 @@ export default function PersonalInformation() {
       setError(err.messageB || "Failed to save birthday");
     }
   };
-
+//  --------------------------------- Country ----------------------------
   const handleCountrySave = async () => {
     if (!auth.currentUser) {
       setError("You must be logged in to save your country.");
@@ -407,20 +435,51 @@ export default function PersonalInformation() {
         </div>
 
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
+              Bio
+            </label>
+
+            <span className="text-xs text-slate-500">
+              {bio.length}/200
+            </span>
+          </div>
+
+          <textarea
+            value={bio}
+            maxLength={200}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell people something about you..."
+            rows={4}
+            className="thin-scrollbar w-full rounded-xl text-sm text-slate-300 border border-gray-600 bg-gray-800 px-4 py-3 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500 resize-none"
+          />
+
+          <div className="flex justify-end mt-3">
+            <button
+              type="button"
+              onClick={handleBioSave}
+              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors"
+            >
+              Save
+            </button>
+          </div>
+
+          {messageBio && (
+            <p className="text-sm text-slate-400 mt-3">
+              {messageBio}
+            </p>
+          )}
+
+        </div>
+
+        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Email Address</label>
           <p className="text-2xl font-bold text-white mt-2 break-all">{user?.email}</p>
           <p className="text-xs text-slate-400 mt-2">
             {user?.emailVerified ? "Verified ✓" : "Not verified"}
           </p>
         </div>
-
-        {/* <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
-          <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Account Status</label>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-            <p className="text-lg font-semibold text-green-400">Active</p>
-          </div>
-        </div> */}
 
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Birthday</label>
