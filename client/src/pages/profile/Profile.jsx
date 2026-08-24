@@ -1,13 +1,19 @@
 import { onAuthStateChanged, reload } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProfileOverview from "./ProfileOverview";
 import AccountDetails from "./AccountDetails";
-import { Settings, Crown, LogOut } from "lucide-react";
+import { Settings, Crown, LogOut, User2, Cake, Pencil } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
+  const [birthday, setBirthday] = useState('');
+  const [country, setCountry] = useState('');
+  const [sex, setSex] = useState('');
+  const [relationship, setRelationship] = useState('');
+  const [employment, setEmployment] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
@@ -29,35 +35,134 @@ export default function Profile() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if(currentUser) {
-        await reload(currentUser);
-        setUser(auth.currentUser);
-      } else {
-        setUser(null);
+      if (!currentUser) {
+        setSex('');
+        setRelationship('');
+        setEmployment('');
+        setBirthday('');
+        setCountry('');
+        return;
       }
-      
+
+      await reload(currentUser);
+      setUser(currentUser);
+
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+
+          setSex(userData.sex || '');
+          setRelationship(userData.relationship || '');
+          setEmployment(userData.employment || '');
+          setBirthday(userData.birthday || '');
+          setCountry(userData.country || '');
+        
+        }  
+      } catch (err) {
+        console.error("Error fetching:", err);
+      }
     });
     return () => unsubscribe();
   }, []);
 
+
+
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
-      <aside className="w-72 bg-gradient-to-b from-slate-800 to-slate-900 p-6 shadow-2xl border-r border-slate-700 overflow-y-auto">
+    <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+      <aside className="w-72 h-screen bg-gradient-to-b thin-scrollbar from-slate-800 to-slate-900 p-6 shadow-2xl border-r border-slate-700 overflow-y-auto">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">Raccoon</h2>
           <p className="text-xs text-slate-400 uppercase tracking-wider">My Profile</p>
         </div>
         
         {/* User Avatar Section */}
-        <div className="mb-8 p-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg backdrop-blur overflow-y-auto">
+        <div className="mb-8 p-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg backdrop-blur">
           <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg">
             {displayName.charAt(0).toUpperCase()}
+            <Pencil></Pencil>
           </div>
           <p className="text-center font-semibold text-slate-100">{displayName}</p>
           <p className="text-center text-sm text-slate-400 break-all">{user?.email}</p>
+          <p className="text-center text-sm text-blue-700 break-all">Joined {user?.metadata?.creationTime
+                ? new Date(user.metadata.creationTime).toLocaleDateString()
+                : 'N/A'}
+          </p>
         </div>
+
+        {/* Personal Card */}
+        <div className="mb-8 rounded-2xl border border-slate-700/60 bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-black/80 p-5 shadow-xl backdrop-blur-md">
+          {/* Header */}
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                Personal Info
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">
+                A little about you
+              </p>
+            </div>
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-700/50 text-slate-300">
+              <User2></User2>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="space-y-3">
+
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                Sex
+              </p>
+              <p className="break-words text-sm font-semibold text-slate-200">
+                {sex || "Not set"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                Relationship Status
+              </p>
+              <p className="break-words text-sm font-semibold text-slate-200">
+                {relationship || "Not Set"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                Employment Status
+              </p>
+              <p className="break-words text-sm font-semibold text-slate-200">
+                {employment || "Not Set"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+              <p className="mb-1 flex text-xs font-medium uppercase tracking-wider text-slate-500">
+                Birthday
+              </p>
+              <p className="break-words text-sm font-semibold text-slate-200">
+                {birthday || "Not set"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                Country
+              </p>
+              <p className="break-words text-sm font-semibold text-slate-200">
+                {country || "Not set"}
+              </p>
+            </div>
+
+
+          </div>
+        </div>        
 
         {/* Account Status */}
         <div className="space-y-3 mb-6">
@@ -108,7 +213,7 @@ export default function Profile() {
         </button>
       </aside>
 
-      <main className="flex-1 thin-scrollbar flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+      <main className="flex-1 min-w-0 h-screen thin-scrollbar flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Tab Navigation */}
         <div className="flex gap-4 px-10 pt-10 pb-4 border-b border-slate-700 bg-gradient-to-b from-slate-900 to-slate-900/50 flex-shrink-0 sticky top-0 z-10">
           {profileTabs.map((tab) => (

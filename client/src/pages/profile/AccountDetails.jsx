@@ -1,27 +1,28 @@
-import { useState, useEffect, use } from "react";
-import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
+import { useState, useEffect} from "react";
+import { onAuthStateChanged, reload} from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Merge } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 export default function AccountDetails() {
   const [user, setUser] = useState(null);
+  const [username, setUsername] = useState('');
+  const [newUsername, setNewUsername] = useState('');
   const [bio, setBio] = useState('');
   const [status, setStatus] = useState('none');
-  const [birthday, setBirthday] = useState('');
-  const [country, setCountry] = useState('');
-  const [verificationSent, setVerification] = useState(false);
   const [socialLinks, setSocialLinks] = useState([]);
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
+  const [openUsernameModal, setOpenUsernameModal] = useState(false);
+  const [message, setMessage] = useState('');
+ 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         setUser(null);
         setBio('');
-        setBirthday('');
-        setCountry('');
         setSocialLinks([]);
+        setUsername('');
         return;
       }
 
@@ -29,15 +30,30 @@ export default function AccountDetails() {
       setUser(currentUser);
 
       try {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userRef);
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
+
           setBio(userData.bio || '');
           setStatus(userData.status || 'none');
-          setBirthday(userData.birthday || "");
-          setCountry(userData.country || "");
           setSocialLinks(userData.socialLinks || []);
-        }
+        
+          if (userData.handle) {
+            setUsername(userData.handle);
+          } else {
+            const randomName = `@ ${currentUser.displayName || currentUser.email?.split('@')[0] || 'User'}_${Math.floor(1000 + Math.random() * 9000)}`;
+            await setDoc(
+              userRef,
+              {
+                handle: randomName,
+              },
+              { merge: true }
+            );
+            setUsername(randomName);
+          }
+        }  
       } catch (err) {
         console.error("Error fetching birthday:", err);
       }
@@ -76,6 +92,32 @@ export default function AccountDetails() {
     }
   };
 
+  const handleUpdateUsername = async () => {
+    if (!user) return;
+    const formattedUsername = newUsername.replace(/\s+/g, '_');
+    if (formattedUsername.length < 3) {
+      setMessage('At least 3 character');
+      return;
+    }
+    setNewUsername(formattedUsername);
+
+    try {
+      await setDoc(doc(db, 'users', user.uid),
+        {
+          handle: newUsername,
+        },
+        { merge: true }
+      );
+      setMessage('');
+      setUsername(formattedUsername);
+      setNewUsername(formattedUsername);
+      setOpenUsernameModal(false);
+    } catch (err) {
+      console.log(err)
+    }
+
+  }
+
   return (
     <div>
       {/* Account Details Section */}
@@ -89,7 +131,64 @@ export default function AccountDetails() {
             <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
               Display Name
             </label>
-            <p className="text-xl font-bold text-white mt-2">{displayName}</p>
+            <p className="text-3xl font-bold text-white my-2">{displayName}</p>
+
+            <div className="flex gap-3 ralative">
+              {username && (<>
+                <p className="text-slate-500">@{username}</p>
+                <Pencil 
+                  onClick={() => {
+                    setOpenUsernameModal(true);
+                  }}
+                  className="text-slate-500 mt-1 cursor-pointer" 
+                  size={16}
+                />
+              </>)}
+            </div>
+
+            {openUsernameModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                <div className="w-[300px] h-[250px] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-8">
+                  <h2 className="text-center text-white font-semibold text-xl py-2">Edit Username</h2>
+                  {message && (
+                    <p className="text-red-500 font-semibold text-center pb-2">{message}</p>
+                  )}
+                  <input 
+                    value={newUsername}
+                    type="text"
+                    minLength={3}
+                    maxLength={25}
+                    placeholder={username}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className={`w-full p-2 text-white ${
+                        newUsername.length >= 15 ? "text-sm" : "text-base"
+                      } border font-semibold rounded-2xl hover:bg-gray-700`}                    
+                  />
+
+                  <div className="justify-between flex">
+                   <button
+                      type="button"
+                      onClick={() => {
+                        setOpenUsernameModal(false)
+                      }}
+                      className="mt-6 px-4 py-2 border hover:bg-gray-700 text-white rounded-lg"
+                    >
+                      Close
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleUpdateUsername();
+                      }}
+                      className="mt-6 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg"
+                    >
+                      Save & Change
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {bio ? (
               <div>
@@ -129,50 +228,6 @@ export default function AccountDetails() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-            <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-              Email Address
-            </label>
-            <p className="text-lg font-semibold text-white mt-2 break-all">{user?.email}</p>
-          </div>
-
-          <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-            <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-              User ID
-            </label>
-            <p className="text-sm text-slate-300 mt-2 break-all font-mono">{user?.uid}</p>
-          </div>
-
-          {country && (
-            <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-              <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-                Country
-              </label>
-              <p className="text-lg mt-2 break-all font-semibold mt-2 text-white">{country}</p>
-            </div>
-          )}
-
-          <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-            <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-              Account Created
-            </label>
-            <p className="text-lg font-semibold text-white mt-2">
-              {user?.metadata?.creationTime
-                ? new Date(user.metadata.creationTime).toLocaleDateString()
-                : 'N/A'}
-            </p>
-          </div>
-
-          <div className="p-4 bg-slate-700/30 rounded border border-slate-600">
-            <label className="text-xs uppercase tracking-wider text-slate-400 font-semibold">
-              Birthday
-            </label>
-            <p className="text-lg font-semibold text-white mt-2">{birthday || 'Not set'}</p>
-          </div>
-
-        </div>
       </div>
 
       {socialLinks.length > 0 && (

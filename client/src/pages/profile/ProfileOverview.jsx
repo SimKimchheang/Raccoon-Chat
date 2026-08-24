@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
+import { onAuthStateChanged, reload} from "firebase/auth";
 import { auth } from "../../services/firebase";
 
 export default function ProfileOverview() {
   const [user, setUser] = useState(null);
-  const [verificationSent, setVerification] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

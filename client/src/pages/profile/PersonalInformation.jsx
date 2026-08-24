@@ -1,6 +1,6 @@
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { doc, getDoc, or, setDoc } from "firebase/firestore";
 import { Pencil } from "lucide-react";
 
@@ -11,6 +11,9 @@ export default function PersonalInformation() {
   const [country, setCountry] = useState('');
   const [username, setUsername] = useState('');
   const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
+  const [sex, setSex] = useState('');
+  const [relationship, setRelationship] = useState('');
+  const [employment, setEmployment] = useState('');
 
   const [error, setError] = useState('');
   const [usernameError, setUsernameError] = useState('');
@@ -25,6 +28,115 @@ export default function PersonalInformation() {
   const [bioToggle, setBioToggle] = useState(false);
   const [originalBirthday, setOriginalBirthday] = useState('');
   const [birthdayToggle, setBirthdayToggle] = useState(false);
+
+  const [sexSaving, setSexSaving] = useState(false);
+  const [sexSaved, setSexSaved] = useState(false);
+  const handleSexChange = async (e) => {
+    const newSex = e.target.value;
+
+    setSex(newSex);
+    setSexSaving(true);
+    setSexSaved(false);
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) return;
+
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        {
+          sex: newSex
+        },
+        { merge: true }
+      );
+
+      setSexSaved(true);
+
+      // Optional: hide "Saved" after 2 seconds
+      setTimeout(() => {
+        setSexSaved(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error("Failed to save sex:", error);
+    } finally {
+      setSexSaving(false);
+    }
+  };
+
+  const [relationshipSaving, setRelationshipSaving] = useState(false);
+  const [relationshipSaved, setRelationshipSaved] = useState(false);
+  const handleRelationshipChange = async (e) => {
+    const newRelationship = e.target.value;
+
+    setRelationship(newRelationship);
+    setRelationshipSaving(true);
+    setRelationshipSaved(false);
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) return;
+
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        {
+          relationship: newRelationship
+        },
+        { merge: true }
+      );
+
+      setRelationshipSaved(true);
+
+      // Optional: hide "Saved" after 2 seconds
+      setTimeout(() => {
+        setSexSaved(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error("Failed to save sex:", error);
+    } finally {
+      setRelationshipSaving(false);
+    }
+  };
+
+  const [employmentSaving, setEmploymentSaving] = useState(false);
+  const [employmentSaved, setEmploymentSaved] = useState(false);
+  const handleEmploymentChange = async (e) => {
+    const newEmployment = e.target.value;
+
+    setEmployment(newEmployment);
+    setEmploymentSaving(true);
+    setEmploymentSaved(false);
+
+    try {
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) return;
+
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        {
+          employment: newEmployment
+        },
+        { merge: true }
+      );
+
+      setEmploymentSaved(true);
+
+      // Optional: hide "Saved" after 2 seconds
+      setTimeout(() => {
+        setEmploymentSaved(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error("Failed to save sex:", error);
+    } finally {
+      setEmploymentSaving(false);
+    }
+  };
+
 
   const countries = [
     { id: 'afghanistan', label: 'Afghanistan' },
@@ -287,6 +399,8 @@ export default function PersonalInformation() {
             setUsername(currentUser.displayName);
           }
 
+          setSex(userData.sex || '');
+          setRelationship(userData.relationship || '');
           setBirthday(userData.birthday || '');
           setCountry(userData.country || '');
           setBio(userData.bio || '');
@@ -393,7 +507,7 @@ export default function PersonalInformation() {
     }
   };
 
-  // ------------------------ Birthday --------------------------------------
+  // ------------------------ Birthday ---------------------------
   const handleBirthdaySave = async () => {
     if (!auth.currentUser) {
       setError("You must be logged in to save your birthday.");
@@ -413,7 +527,7 @@ export default function PersonalInformation() {
       setError(err.messageB || "Failed to save birthday");
     }
   };
-//  --------------------------------- Country ----------------------------
+//  ------------------------- Country ----------------------------
   const handleCountrySave = async () => {
     if (!auth.currentUser) {
       setError("You must be logged in to save your country.");
@@ -565,7 +679,129 @@ export default function PersonalInformation() {
           </p>
         </div>
 
-          {/* Birthday Card */}
+        {/* Sex Card */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+          <div className="flex items-center justify-between">
+            <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
+              Sex
+            </label>
+
+            {sexSaving && (
+              <span className="text-xs text-slate-400">
+                Saving...
+              </span>
+            )}
+
+            {!sexSaving && sexSaved && (
+              <span className="text-xs text-green-400">
+                Saved ✓
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <select
+              value={sex}
+              onChange={handleSexChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+            >
+              <option value="" disabled>
+                {sex ? `Current is ${sex}` : "What should we call you?"}
+              </option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="None">Prefer not to say</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Relationship Card */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+          <div className="flex items-center justify-between">
+            <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
+              Relationship Status
+            </label>
+
+            {relationshipSaving && (
+              <span className="text-xs text-slate-400">
+                Saving...
+              </span>
+            )}
+
+            {!relationshipSaving && relationshipSaved && (
+              <span className="text-xs text-green-400">
+                Saved ✓
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <select
+              value={relationship}
+              onChange={handleRelationshipChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+            >
+              <option value="" disabled>
+                {relationship ? `Current is ${relationship}` : "Not set"}
+              </option>
+
+            <option value="Single">Single</option>
+            <option value="In a relationship">In a relationship</option>
+            <option value="Engaged">Engaged</option>
+            <option value="Married">Married</option>
+            <option value="Separated">Separated</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
+            <option value="It's complicated">It's complicated</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+
+            </select>
+          </div>
+        </div>
+
+        {/* Employment Card */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+          <div className="flex items-center justify-between">
+            <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
+              Employment Status
+            </label>
+
+            {employmentSaving && (
+              <span className="text-xs text-slate-400">
+                Saving...
+              </span>
+            )}
+
+            {!employmentSaving && employmentSaved && (
+              <span className="text-xs text-green-400">
+                Saved ✓
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <select
+              value={employment}
+              onChange={handleEmploymentChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+            >
+              <option value="" disabled>
+                {employment ? `Current is ${employment}` : "Not set"}
+              </option>
+
+            <option value="Student">Student</option>
+            <option value="Employed">Employed</option>
+            <option value="Self-employed">Self-employed</option>
+            <option value="Unemployed">Unemployed</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+
+            </select>
+          </div>
+        </div>
+
+
+
+        {/* Birthday Card */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Birthday</label>
           <div className="mt-3 grid items-center gap-3">
