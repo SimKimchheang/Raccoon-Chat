@@ -1,19 +1,28 @@
 import { useState, useEffect} from "react";
 import { onAuthStateChanged, reload} from "firebase/auth";
 import { auth, db } from "../../services/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Pencil } from "lucide-react";
+import {
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  collection,
+  query,
+  where,
+  runTransaction
+} from "firebase/firestore";
 
 export default function AccountDetails() {
   const [user, setUser] = useState(null);
-  const [username, setUsername] = useState('');
-  const [newUsername, setNewUsername] = useState('');
   const [bio, setBio] = useState('');
   const [status, setStatus] = useState('none');
   const [socialLinks, setSocialLinks] = useState([]);
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
-  const [openUsernameModal, setOpenUsernameModal] = useState(false);
+  const [handle, setHandle] = useState("");
+  const [newHandle, setNewHandle] = useState("");
+  const [openHandleModal, setOpenHandleModal] = useState(false);
   const [message, setMessage] = useState('');
  
   useEffect(() => {
@@ -22,7 +31,8 @@ export default function AccountDetails() {
         setUser(null);
         setBio('');
         setSocialLinks([]);
-        setUsername('');
+        setHandle('');
+        setNewHandle('');
         return;
       }
 
@@ -41,9 +51,12 @@ export default function AccountDetails() {
           setSocialLinks(userData.socialLinks || []);
         
           if (userData.handle) {
-            setUsername(userData.handle);
+            setHandle(userData.handle);
           } else {
-            const randomName = `@ ${currentUser.displayName || currentUser.email?.split('@')[0] || 'User'}_${Math.floor(1000 + Math.random() * 9000)}`;
+            const randomName = `${currentUser.displayName ||
+              currentUser.email?.split('@')[0] ||
+              'User'}_${Math.floor(1000 + Math.random() * 9000)}`.replace(/\s+/g, "_");
+              
             await setDoc(
               userRef,
               {
@@ -51,7 +64,8 @@ export default function AccountDetails() {
               },
               { merge: true }
             );
-            setUsername(randomName);
+            setHandle(randomName);
+            setNewHandle(randomName);
           }
         }  
       } catch (err) {
@@ -92,31 +106,68 @@ export default function AccountDetails() {
     }
   };
 
-  const handleUpdateUsername = async () => {
+  const handleUpdateHandle = async () => {
     if (!user) return;
-    const formattedUsername = newUsername.replace(/\s+/g, '_');
-    if (formattedUsername.length < 3) {
-      setMessage('At least 3 character');
+
+    const formattedHandle = newHandle
+      .trim()
+      .replace(/\s+/g, "_");
+
+    if (formattedHandle.length < 3) {
+      setMessage("At least 3 characters");
       return;
     }
-    setNewUsername(formattedUsername);
 
-    try {
-      await setDoc(doc(db, 'users', user.uid),
-        {
-          handle: newUsername,
-        },
-        { merge: true }
-      );
-      setMessage('');
-      setUsername(formattedUsername);
-      setNewUsername(formattedUsername);
-      setOpenUsernameModal(false);
-    } catch (err) {
-      console.log(err)
+    if (!/^[a-zA-Z0-9_]+$/.test(formattedHandle)) {
+      setMessage("Only letters, numbers, and underscores are allowed");
+      return;
     }
 
-  }
+    try {
+      await runTransaction(db, async (transaction) => {
+        const newHandleRef = doc(db, "handles", formattedHandle);
+        const newHandleDoc = await transaction.get(newHandleRef);
+
+        // Handle belongs to another user
+        if (
+          newHandleDoc.exists() &&
+          newHandleDoc.data().uid !== user.uid
+        ) {
+          throw new Error("HANDLE_TAKEN");
+        }
+
+        // Save handle → users
+        const userRef = doc(db, "users", user.uid);
+
+        transaction.set(
+          userRef,
+          {
+            handle: formattedHandle,
+          },
+          { merge: true }
+        );
+
+        // Reserve handle → handles
+        transaction.set(newHandleRef, {
+          uid: user.uid,
+        });
+      });
+
+      setHandle(formattedHandle);
+      setNewHandle(formattedHandle);
+      setMessage("");
+      setOpenHandleModal(false);
+
+    } catch (err) {
+      console.error("Error updating handle:", err);
+
+      if (err.message === "HANDLE_TAKEN") {
+        setMessage("This handle is already taken");
+      } else {
+        setMessage("Something went wrong. Please try again.");
+      }
+    }
+  };
 
   return (
     <div>
@@ -134,11 +185,13 @@ export default function AccountDetails() {
             <p className="text-3xl font-bold text-white my-2">{displayName}</p>
 
             <div className="flex gap-3 ralative">
-              {username && (<>
-                <p className="text-slate-500">@{username}</p>
+              {handle && (<>
+                <p className="text-slate-500">@{handle}</p>
                 <Pencil 
                   onClick={() => {
-                    setOpenUsernameModal(true);
+                    setOpenHandleModal(true);
+                    setNewHandle(handle);
+                    setMessage('');
                   }}
                   className="text-slate-500 mt-1 cursor-pointer" 
                   size={16}
@@ -146,22 +199,22 @@ export default function AccountDetails() {
               </>)}
             </div>
 
-            {openUsernameModal && (
+            {openHandleModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
                 <div className="w-[300px] h-[250px] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-8">
-                  <h2 className="text-center text-white font-semibold text-xl py-2">Edit Username</h2>
+                  <h2 className="text-center text-white font-semibold text-xl py-2">Edit Handle</h2>
                   {message && (
                     <p className="text-red-500 font-semibold text-center pb-2">{message}</p>
                   )}
                   <input 
-                    value={newUsername}
+                    value={newHandle}
                     type="text"
                     minLength={3}
                     maxLength={25}
-                    placeholder={username}
-                    onChange={(e) => setNewUsername(e.target.value)}
+                    placeholder={handle}
+                    onChange={(e) => setNewHandle(e.target.value)}
                     className={`w-full p-2 text-white ${
-                        newUsername.length >= 15 ? "text-sm" : "text-base"
+                        newHandle.length >= 15 ? "text-sm" : "text-base"
                       } border font-semibold rounded-2xl hover:bg-gray-700`}                    
                   />
 
@@ -169,7 +222,7 @@ export default function AccountDetails() {
                    <button
                       type="button"
                       onClick={() => {
-                        setOpenUsernameModal(false)
+                        setOpenHandleModal(false)
                       }}
                       className="mt-6 px-4 py-2 border hover:bg-gray-700 text-white rounded-lg"
                     >
@@ -179,7 +232,7 @@ export default function AccountDetails() {
                     <button
                       type="button"
                       onClick={() => {
-                        handleUpdateUsername();
+                        handleUpdateHandle();
                       }}
                       className="mt-6 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg"
                     >

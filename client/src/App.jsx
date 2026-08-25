@@ -1,7 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AuthRedirect from './components/AuthRedirect';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import LandingPage from './pages/auth/LandingPage';
 import Registration from './pages/auth/Registration';
 import Login from './pages/auth/Login'; 

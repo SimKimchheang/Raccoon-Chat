@@ -2,12 +2,24 @@ import { onAuthStateChanged, reload } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useViewTransitionState } from "react-router-dom";
 import ProfileOverview from "./ProfileOverview";
 import AccountDetails from "./AccountDetails";
-import { Settings, Crown, LogOut, User2, Cake, Pencil } from "lucide-react";
+import { Settings, Crown, LogOut, User2, Cake, Pencil, Merge } from "lucide-react";
+import raccoon1Img from '../../assets/raccoon1.png'
+import raccoon2Img from '../../assets/raccoon2.png'
+import raccoon3Img from '../../assets/raccoon3.png'
+import raccoon4Img from '../../assets/raccoon4.png'
+import raccoon5Img from '../../assets/raccoon5.png'
+import raccoon6Img from '../../assets/raccoon6.png'
+import raccoon7Img from '../../assets/raccoon7.png'
+import raccoon8Img from '../../assets/raccoon8.png'
+import raccoon9Img from '../../assets/raccoon9.png'
+import raccoon10Img from '../../assets/raccoon10.png'
+
 
 export default function Profile() {
+  const [avatar, setAvatar] = useState(null);
   const [user, setUser] = useState(null);
   const [birthday, setBirthday] = useState('');
   const [country, setCountry] = useState('');
@@ -18,6 +30,22 @@ export default function Profile() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [openProfileMenu, setOpenProfileMenu] = useState(false);
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const [openAvatar, setOpenAvatar] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+
+  const raccoonAvatars = [
+  raccoon1Img,
+  raccoon2Img,
+  raccoon3Img,
+  raccoon4Img,
+  raccoon5Img,
+  raccoon6Img,
+  raccoon7Img,
+  raccoon8Img,
+  raccoon9Img,
+  raccoon10Img,
+];
 
   const setRightMenu = () => {
     setOpenProfileMenu(!openProfileMenu);
@@ -36,6 +64,7 @@ export default function Profile() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
+        setAvatar(null);
         setSex('');
         setRelationship('');
         setEmployment('');
@@ -53,7 +82,7 @@ export default function Profile() {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-
+          setAvatar(userData.avatar ?? null);
           setSex(userData.sex || '');
           setRelationship(userData.relationship || '');
           setEmployment(userData.employment || '');
@@ -68,9 +97,33 @@ export default function Profile() {
     return () => unsubscribe();
   }, []);
 
+  // Avatar Handling
+  const handleAvatar = async () => {
+    const currentUser = auth.currentUser;
 
+    if (!currentUser) {
+      console.log("You must be logged in");
+      return;
+    }
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+    try {
+      if (selectedAvatar === null) return;
+
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        {
+          avatar: selectedAvatar,
+        },
+        { merge: true }
+      );
+
+      setAvatar(selectedAvatar);
+      setOpenAvatar(false);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
@@ -81,10 +134,24 @@ export default function Profile() {
         </div>
         
         {/* User Avatar Section */}
-        <div className="mb-8 p-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg backdrop-blur">
+        <div className="mb-8 relative p-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg backdrop-blur">
           <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg">
-            {displayName.charAt(0).toUpperCase()}
-            <Pencil></Pencil>
+            
+            {avatar !== null ? (
+              <img 
+                src={raccoonAvatars[avatar]}
+                alt="Avatar"
+                className='h-20 w-20 rounded-full object-cover'
+               />
+            ) : (
+              displayName.charAt(0).toUpperCase()
+            )}
+
+            <Pencil 
+              size={18} 
+              onClick={() => setOpenAvatar(true)}
+              className="absolute right-20 bottom-20 cursor-pointer"
+            ></Pencil>
           </div>
           <p className="text-center font-semibold text-slate-100">{displayName}</p>
           <p className="text-center text-sm text-slate-400 break-all">{user?.email}</p>
@@ -93,6 +160,68 @@ export default function Profile() {
                 : 'N/A'}
           </p>
         </div>
+
+        {/* Open Avatar-Box Modal */}
+        {openAvatar && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="w-[500px] rounded-2xl bg-gray-800 p-6 shadow-2xl">
+
+              <h2 className="mb-6 text-xl font-semibold text-white">
+                Choose your avatar
+              </h2>
+
+              {/* Avatar Cards */}
+              <div className="grid grid-cols-5 gap-4">
+                {raccoonAvatars.map((avatar, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSelectedAvatar(index)}
+                    className={`rounded-xl border-2 p-1 transition
+                      ${
+                        selectedAvatar === index
+                          ? "border-purple-500 bg-purple-500/20"
+                          : "border-transparent hover:border-purple-500 hover:bg-gray-700"
+                      }
+                    `}
+                  >
+                    <img
+                      src={avatar}
+                      alt={`Raccoon avatar ${index + 1}`}
+                      className="h-20 w-20 rounded-xl object-cover"
+                    />
+                  </button>
+
+                ))}
+              </div>
+
+              {/* Buttons */}
+              <div className="mt-6 flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAvatar(avatar)
+                    setOpenAvatar(false);
+                  }}
+                  className="rounded-lg bg-gray-700 px-4 py-2 text-white hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleAvatar}
+                  className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-500"
+                >
+                  Save
+                </button>
+
+                
+              </div>
+
+            </div>
+          </div>
+        )}
 
         {/* Personal Card */}
         <div className="mb-8 rounded-2xl border border-slate-700/60 bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-black/80 p-5 shadow-xl backdrop-blur-md">
@@ -215,7 +344,7 @@ export default function Profile() {
 
       <main className="flex-1 min-w-0 h-screen thin-scrollbar flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Tab Navigation */}
-        <div className="flex gap-4 px-10 pt-10 pb-4 border-b border-slate-700 bg-gradient-to-b from-slate-900 to-slate-900/50 flex-shrink-0 sticky top-0 z-10">
+        <div className="flex gap-4 px-5 pt-5 pb-4 border-b border-slate-700 bg-gradient-to-b from-slate-900 to-slate-900/50 flex-shrink-0 sticky top-0 z-10">
           {profileTabs.map((tab) => (
             <button
               key={tab.id}
@@ -250,7 +379,7 @@ export default function Profile() {
           </div>
 
           {openProfileMenu && (
-            <div className="absolute top-24 right-10 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-2 z-50">
+            <div className="absolute top-15 right-5 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-2 z-50">
               {profileItems.map((item) => {
                 const isActive = (item.id === 'home' && location.pathname === '/home') || 
                                 (item.id === 'profile' && location.pathname === '/home/profile');

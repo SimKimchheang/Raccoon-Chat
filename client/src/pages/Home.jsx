@@ -67,12 +67,6 @@ export default function Home() {
 
       {/* Search Section*/}
       <div className="flex gap-2 pb-2 sticky top-0 left-0 right-0 bg-gray-800 z-10">
-        <button 
-          className="cursor-pointer mr-2"
-          onClick={openSidebar}
-          >
-          ☰
-        </button>
         <input
           placeholder="Search..."
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-purple-500"
@@ -80,11 +74,8 @@ export default function Home() {
       </div>
 
       {/* --------------------- Group Chat Section ------------------*/}
-      <div 
-        className="mt-4 flex-1 overflow-y-auto thin-scrollbar" >
-        {Array.from({ length: 10 }).map((_, i) => (
-          <p key={i}>{i}</p>
-        ))}
+      <div className="mt-4 flex-1 overflow-y-auto thin-scrollbar"> 
+        
       </div>
     </section>
 
@@ -149,28 +140,7 @@ export default function Home() {
     </section>
 
     {/* ----------------------- Left Sidebar Nav ------------------------- */}
-    <section
-      className={`absolute top-0 left-0 h-screen w-80
-      bg-gray-800 shadow-xl z-50
-      transition-transform duration-300
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-    >
-      <div
-        className='p-6'
-      > 
-        <button
-          className='cursor-pointer'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          ☰
-        </button>
-
-        {/* Is Opened */}
-        <section className="grid gap-4 place-items-center">
-
-        </section>
-      </div>
-    </section>
+    
 
 
   </div>
