@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, reload} from "firebase/auth";
 import { auth } from "../../services/firebase";
+import {  } from "lucide-react";
 
 export default function ProfileOverview() {
   const [user, setUser] = useState(null);
@@ -24,9 +25,24 @@ export default function ProfileOverview() {
       {/* Header Section */}
       <div className="mb-10">
         <div className="grid">
-          <h1 className="text-5xl p-2 font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-3">
-            Welcome Back, {displayName}! 👋
-          </h1>
+          <div className="
+              text-3xl
+              sm:text-4xl
+              lg:text-5xl
+              p-2
+              font-bold
+              text-transparent
+              bg-clip-text
+              bg-gradient-to-r from-purple-400 to-pink-600
+              mb-3 flex gap-3
+            ">
+              <h1 className="text-slate-500">
+                Welcome Back,
+              </h1>
+              <h1 className="">
+                {displayName} !
+              </h1>
+          </div>
           <p className="text-slate-400 text-lg">Manage your account and privacy settings</p>
         </div>
       </div>

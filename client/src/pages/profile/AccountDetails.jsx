@@ -53,19 +53,39 @@ export default function AccountDetails() {
           if (userData.handle) {
             setHandle(userData.handle);
           } else {
+
             const randomName = `${currentUser.displayName ||
               currentUser.email?.split('@')[0] ||
-              'User'}_${Math.floor(1000 + Math.random() * 9000)}`.replace(/\s+/g, "_");
-              
-            await setDoc(
-              userRef,
-              {
-                handle: randomName,
-              },
-              { merge: true }
-            );
+              'User'}_${Math.floor(1000 + Math.random() * 9000)}`
+              .replace(/\s+/g, "_")
+              .toLowerCase();
+
+            const userRef = doc(db, "users", currentUser.uid);
+            const handleRef = doc(db, "handles", randomName);
+
+            await runTransaction(db, async (transaction) => {
+              const handleDoc = await transaction.get(handleRef);
+
+              if (handleDoc.exists()) {
+                throw new Error("HANDLE_EXISTS");
+              }
+
+              transaction.set(
+                userRef,
+                {
+                  handle: randomName,
+                },
+                { merge: true }
+              );
+
+              transaction.set(handleRef, {
+                uid: currentUser.uid,
+              });
+            });
+
             setHandle(randomName);
             setNewHandle(randomName);
+
           }
         }  
       } catch (err) {
@@ -111,24 +131,36 @@ export default function AccountDetails() {
 
     const formattedHandle = newHandle
       .trim()
-      .replace(/\s+/g, "_");
+      .replace(/\s+/g, "_")
+      .toLowerCase();
 
     if (formattedHandle.length < 3) {
       setMessage("At least 3 characters");
       return;
     }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(formattedHandle)) {
+    if (!/^[a-z0-9_]+$/.test(formattedHandle)) {
       setMessage("Only letters, numbers, and underscores are allowed");
+      return;
+    }
+
+    // Nothing changed
+    if (formattedHandle === handle.toLowerCase()) {
+      setMessage("");
+      setOpenHandleModal(false);
       return;
     }
 
     try {
       await runTransaction(db, async (transaction) => {
+        const userRef = doc(db, "users", user.uid);
+
+        // New handle document
         const newHandleRef = doc(db, "handles", formattedHandle);
+
+        // Check if new handle already exists
         const newHandleDoc = await transaction.get(newHandleRef);
 
-        // Handle belongs to another user
         if (
           newHandleDoc.exists() &&
           newHandleDoc.data().uid !== user.uid
@@ -136,9 +168,30 @@ export default function AccountDetails() {
           throw new Error("HANDLE_TAKEN");
         }
 
-        // Save handle → users
-        const userRef = doc(db, "users", user.uid);
+        // Delete old handle
+        if (handle) {
+          const oldHandleRef = doc(
+            db,
+            "handles",
+            handle.toLowerCase()
+          );
 
+          const oldHandleDoc = await transaction.get(oldHandleRef);
+
+          if (
+            oldHandleDoc.exists() &&
+            oldHandleDoc.data().uid === user.uid
+          ) {
+            transaction.delete(oldHandleRef);
+          }
+        }
+
+        // Create new handle reservation
+        transaction.set(newHandleRef, {
+          uid: user.uid,
+        });
+
+        // Update user's profile
         transaction.set(
           userRef,
           {
@@ -146,11 +199,6 @@ export default function AccountDetails() {
           },
           { merge: true }
         );
-
-        // Reserve handle → handles
-        transaction.set(newHandleRef, {
-          uid: user.uid,
-        });
       });
 
       setHandle(formattedHandle);
@@ -167,7 +215,7 @@ export default function AccountDetails() {
         setMessage("Something went wrong. Please try again.");
       }
     }
-  };
+  };  
 
   return (
     <div>
@@ -267,7 +315,7 @@ export default function AccountDetails() {
               <select
                 value={status}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                className="w-[300px] px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-purple-500"
+                className="w-[250px] px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-purple-500"
               >
                 {statusOptions.map((option) => (
                   <option key={option.id} value={option.id}>

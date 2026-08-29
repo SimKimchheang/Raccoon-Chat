@@ -33,6 +33,7 @@ export default function Profile() {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const [openAvatar, setOpenAvatar] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const raccoonAvatars = [
   raccoon1Img,
@@ -127,171 +128,163 @@ export default function Profile() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
-      <aside className="w-72 h-screen bg-gradient-to-b thin-scrollbar from-slate-800 to-slate-900 p-6 shadow-2xl border-r border-slate-700 overflow-y-auto">
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed top-0 left-0 z-50
+          h-screen
+          w-72
+          p-4 lg:p-6
+
+          bg-gradient-to-b from-slate-800 to-slate-900
+          shadow-2xl
+          border-r border-slate-700
+
+          overflow-y-auto
+          thin-scrollbar
+
+          transition-transform duration-300
+
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+
+          lg:static
+          lg:translate-x-0
+          lg:w-72
+          lg:flex-shrink-0
+        `}
+      >
+        {/* Close button — only mobile */}
+        <button onClick={() => setIsOpen(false)} className="lg:hidden mb-4">
+          ✕
+        </button>
+
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">Raccoon</h2>
-          <p className="text-xs text-slate-400 uppercase tracking-wider">My Profile</p>
+          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
+            Raccoon
+          </h2>
+          <p className="text-xs text-slate-400 uppercase tracking-wider">
+            My Profile
+          </p>
         </div>
-        
+
         {/* User Avatar Section */}
         <div className="mb-8 relative p-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-lg backdrop-blur">
-          <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg">
-            
+          <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center font-bold text-2xl shadow-lg">
             {avatar !== null ? (
-              <img 
+              <img
                 src={raccoonAvatars[avatar]}
                 alt="Avatar"
-                className='h-20 w-20 rounded-full object-cover'
-               />
+                className="h-20 w-20 rounded-full object-cover"
+              />
             ) : (
               displayName.charAt(0).toUpperCase()
             )}
 
-            <Pencil 
-              size={18} 
+            <Pencil
+              size={18}
               onClick={() => setOpenAvatar(true)}
-              className="absolute right-20 bottom-20 cursor-pointer"
-            ></Pencil>
+              className="
+                absolute
+                -right-1
+                -bottom-1
+                p-1
+                w-6
+                h-6
+                rounded-full
+                bg-slate-700
+                text-slate-200
+                cursor-pointer
+                hover:bg-purple-600
+                transition
+              "
+            />
           </div>
-          <p className="text-center font-semibold text-slate-100">{displayName}</p>
-          <p className="text-center text-sm text-slate-400 break-all">{user?.email}</p>
-          <p className="text-center text-sm text-blue-700 break-all">Joined {user?.metadata?.creationTime
-                ? new Date(user.metadata.creationTime).toLocaleDateString()
-                : 'N/A'}
+          <p className="text-center font-semibold text-slate-100">
+            {displayName}
+          </p>
+          <p className="text-center text-sm text-slate-400 break-all">
+            {user?.email}
+          </p>
+          <p className="text-center text-sm text-blue-700 break-all">
+            Joined{" "}
+            {user?.metadata?.creationTime
+              ? new Date(user.metadata.creationTime).toLocaleDateString()
+              : "N/A"}
           </p>
         </div>
 
-        {/* Open Avatar-Box Modal */}
-        {openAvatar && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="w-[500px] rounded-2xl bg-gray-800 p-6 shadow-2xl">
-
-              <h2 className="mb-6 text-xl font-semibold text-white">
-                Choose your avatar
-              </h2>
-
-              {/* Avatar Cards */}
-              <div className="grid grid-cols-5 gap-4">
-                {raccoonAvatars.map((avatar, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setSelectedAvatar(index)}
-                    className={`rounded-xl border-2 p-1 transition
-                      ${
-                        selectedAvatar === index
-                          ? "border-purple-500 bg-purple-500/20"
-                          : "border-transparent hover:border-purple-500 hover:bg-gray-700"
-                      }
-                    `}
-                  >
-                    <img
-                      src={avatar}
-                      alt={`Raccoon avatar ${index + 1}`}
-                      className="h-20 w-20 rounded-xl object-cover"
-                    />
-                  </button>
-
-                ))}
-              </div>
-
-              {/* Buttons */}
-              <div className="mt-6 flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedAvatar(avatar)
-                    setOpenAvatar(false);
-                  }}
-                  className="rounded-lg bg-gray-700 px-4 py-2 text-white hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleAvatar}
-                  className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-500"
-                >
-                  Save
-                </button>
-
-                
-              </div>
-
-            </div>
-          </div>
-        )}
-
         {/* Personal Card */}
-        <div className="mb-8 rounded-2xl border border-slate-700/60 bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-black/80 p-5 shadow-xl backdrop-blur-md">
-          {/* Header */}
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-white">
-                Personal Info
-              </h2>
-              <p className="mt-1 text-xs text-slate-500">
-                A little about you
-              </p>
+        {(sex || relationship || employment || birthday || country) && (
+          <div className="mb-8 rounded-2xl border border-slate-700/60 bg-gradient-to-br from-slate-800/80 via-slate-900/80 to-black/80 p-5 shadow-xl backdrop-blur-md">
+            {/* Header */}
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white">Personal Info</h2>
+                <p className="mt-1 text-xs text-slate-500">A little about you</p>
+              </div>
+
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-700/50 text-slate-300">
+                <User2></User2>
+              </div>
             </div>
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-700/50 text-slate-300">
-              <User2></User2>
+            {/* Info */}
+            <div className="space-y-3">
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Sex
+                </p>
+                <p className="break-words text-sm font-semibold text-slate-200">
+                  {sex || "Not set"}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Relationship Status
+                </p>
+                <p className="break-words text-sm font-semibold text-slate-200">
+                  {relationship || "Not Set"}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Employment Status
+                </p>
+                <p className="break-words text-sm font-semibold text-slate-200">
+                  {employment || "Not Set"}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+                <p className="mb-1 flex text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Birthday
+                </p>
+                <p className="break-words text-sm font-semibold text-slate-200">
+                  {birthday || "Not set"}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Country
+                </p>
+                <p className="break-words text-sm font-semibold text-slate-200">
+                  {country || "Not set"}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Info */}
-          <div className="space-y-3">
-
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
-                Sex
-              </p>
-              <p className="break-words text-sm font-semibold text-slate-200">
-                {sex || "Not set"}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
-                Relationship Status
-              </p>
-              <p className="break-words text-sm font-semibold text-slate-200">
-                {relationship || "Not Set"}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
-                Employment Status
-              </p>
-              <p className="break-words text-sm font-semibold text-slate-200">
-                {employment || "Not Set"}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
-              <p className="mb-1 flex text-xs font-medium uppercase tracking-wider text-slate-500">
-                Birthday
-              </p>
-              <p className="break-words text-sm font-semibold text-slate-200">
-                {birthday || "Not set"}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 transition hover:bg-slate-700/40">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
-                Country
-              </p>
-              <p className="break-words text-sm font-semibold text-slate-200">
-                {country || "Not set"}
-              </p>
-            </div>
-
-
-          </div>
-        </div>        
+        )}
 
         {/* Account Status */}
         <div className="space-y-3 mb-6">
@@ -306,23 +299,23 @@ export default function Profile() {
               Pending Verification
             </div>
           )}
-          
-          {user?.email === 'chheang097kim@gmail.com' && (
+
+          {user?.email === "chheang097kim@gmail.com" && (
             <div className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded text-blue-400 text-sm">
               <span className="text-lg pl-1">
-                <Crown size={18}/>
+                <Crown size={18} />
               </span>
               Admin Account
             </div>
           )}
         </div>
 
-        <div className='py-3 border-t border-slate-700 space-y-2'>
-          <button 
-            onClick={() => navigate('/home/profile/settings')}
-            className='flex items-center gap-2 w-full text-left px-4 py-2 bg-slate-700/50 hover:bg-slate-700 rounded text-slate-300 hover:text-purple-400 transition-colors font-medium'
+        <div className="py-3 border-t border-slate-700 space-y-2">
+          <button
+            onClick={() => navigate("/home/profile/settings")}
+            className="flex items-center gap-2 w-full text-left px-4 py-2 bg-slate-700/50 hover:bg-slate-700 rounded text-slate-300 hover:text-purple-400 transition-colors font-medium"
           >
-            <Settings size={18}/> Settings
+            <Settings size={18} /> Settings
           </button>
         </div>
 
@@ -335,38 +328,132 @@ export default function Profile() {
             } catch (error) {
               console.error("Error signing out:", error);
             }
-          }} 
-          className='flex items-center gap-2 w-full mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded text-red-400 hover:text-red-300 transition-all font-medium'
+          }}
+          className="flex items-center gap-2 w-full mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded text-red-400 hover:text-red-300 transition-all font-medium"
         >
-          <LogOut size={18}/> Sign Out
+          <LogOut size={18} /> Sign Out
         </button>
       </aside>
+      
+      {/* Open Avatar-Box Modal */} 
+      {openAvatar && ( 
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className=" w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-2xl bg-gray-800 p-4 sm:p-6 shadow-2xl " > 
+            <h2 className="mb-5 sm:mb-6 text-lg sm:text-xl font-semibold text-white">
+               Choose your avatar 
+            </h2> 
+            {/* Avatar Cards */} 
+            <div className=" grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 " > 
+              {raccoonAvatars.map((avatar, index) => ( 
+                <button 
+                  key={index} 
+                  type="button" 
+                  onClick={() => setSelectedAvatar(index)} 
+                  className={` rounded-xl border-2 p-1 transition 
+                    ${ selectedAvatar === index 
+                      ? "border-purple-500 bg-purple-500/20" 
+                      : "border-transparent hover:border-purple-500 hover:bg-gray-700"
+                    } `} > 
+                      <img 
+                      src={avatar} 
+                      alt={`Raccoon avatar ${index + 1}`} 
+                      className=" w-full aspect-square rounded-xl object-cover " 
+                    /> 
+                  </button>
+              ))} 
+            </div> 
+            {/* Buttons */} 
+            <div className="mt-5 sm:mt-6 flex justify-end gap-3 sm:gap-4"> 
+              <button 
+              type="button" 
+              onClick={() => { 
+                setSelectedAvatar(avatar); 
+                setOpenAvatar(false); 
+              }} 
+              className=" rounded-lg bg-gray-700 px-4 py-2 text-sm sm:text-base text-white hover:bg-gray-600 " 
+              > Cancel 
+              </button> 
+              <button 
+                type="button" 
+                onClick={handleAvatar} 
+                className=" rounded-lg bg-purple-600 px-4 py-2 text-sm sm:text-base text-white hover:bg-purple-500 "
+                 > Save 
+                </button> 
+            </div> 
+          </div> 
+        </div> 
+      )}
 
-      <main className="flex-1 min-w-0 h-screen thin-scrollbar flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+
+      {/* ------------------------------------------------------------------------------ */}
+      <main
+        className="
+          flex-1
+          min-w-0
+          h-screen
+          flex
+          flex-col
+          bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950
+          overflow-hidden
+        "
+      >
         {/* Tab Navigation */}
-        <div className="flex gap-4 px-5 pt-5 pb-4 border-b border-slate-700 bg-gradient-to-b from-slate-900 to-slate-900/50 flex-shrink-0 sticky top-0 z-10">
+        <div
+          className="
+          flex
+          gap-2 sm:gap-4
+          px-3 sm:px-5
+          pt-3 sm:pt-5
+          pb-3 sm:pb-4
+          border-b border-slate-700
+          bg-gradient-to-b from-slate-900 to-slate-900/50
+          flex-shrink-0
+          sticky top-0 z-10
+        "
+        >
+          <button
+            onClick={() => setIsOpen(true)}
+            className="lg:hidden  top-4 left-4 z-40
+                      p-2 rounded-lg
+                      bg-slate-800 text-white
+                      hover:bg-slate-700"
+          >
+            ☰
+          </button>
+
           {profileTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 font-medium transition-all rounded-t-lg ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`
+                px-3 sm:px-4
+                py-2
+                text-sm sm:text-base
+                font-small
+                transition-all
+                rounded-t-lg
+                whitespace-nowrap
+
+                ${
+                  activeTab === tab.id
+                    ? " text-white "
+                    : "text-slate-400 hover:text-slate-200"
+                }
+              `}
             >
               {tab.label}
             </button>
           ))}
 
           {/* Profile Icon and Menu */}
-          <div className="ml-auto flex items-center gap-4 cursor-pointer"
+          <div
+            className="ml-auto flex items-center gap-4 cursor-pointer"
             onClick={() => setRightMenu()}
           >
             <div className="relative">
-              {user?.photoURL ? (
+              {avatar !== null ? (
                 <img
-                  src={user.photoURL}
+                  src={raccoonAvatars[avatar]}
                   alt="Profile"
                   className="w-10 h-10 rounded-full object-cover border border-gray-700"
                 />
@@ -380,34 +467,54 @@ export default function Profile() {
 
           {openProfileMenu && (
             <div className="absolute top-15 right-5 bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-2 z-50">
-              {profileItems.map((item) => {
-                const isActive = (item.id === 'home' && location.pathname === '/home') || 
-                                (item.id === 'profile' && location.pathname === '/home/profile');
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      navigate(item.id === 'home' ? '/home' : '/home/profile');
-                      setOpenProfileMenu(false);
-                    }}
-                    className={`block w-full text-left px-4 py-2 rounded transition-all duration-300 font-medium ${
-                      isActive
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                        : "text-slate-300 hover:bg-slate-700/50 hover:text-slate-100"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+              <div className="px-4">
+                <h2 className="border-b pb-1 mb-2 border-slate-400">
+                  {displayName}
+                </h2>
+                {profileItems.map((item) => {
+                  const isActive =
+                    (item.id === "home" && location.pathname === "/home") ||
+                    (item.id === "profile" &&
+                      location.pathname === "/home/profile");
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        navigate(
+                          item.id === "home" ? "/home" : "/home/profile",
+                        );
+                        setOpenProfileMenu(false);
+                      }}
+                      className={`block w-full text-left px-4 py-2 rounded transition-all duration-300 font-medium ${
+                        isActive
+                          ? "text-white shadow-lg"
+                          : "text-slate-300 hover:bg-slate-700/50 hover:text-slate-100"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
         {/* Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-10">
-          {activeTab === 'overview' && <ProfileOverview />}
-          {activeTab === 'details' && <AccountDetails />}
+        <div
+          className="
+            flex-1
+            min-w-0
+            overflow-y-auto
+            p-3
+            sm:p-4
+            md:p-6
+            lg:p-10
+          
+          "
+        >
+          {activeTab === "overview" && <ProfileOverview />}
+          {activeTab === "details" && <AccountDetails />}
         </div>
       </main>
     </div>
