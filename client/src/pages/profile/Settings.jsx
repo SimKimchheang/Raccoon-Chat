@@ -120,11 +120,12 @@ export default function Settings() {
 
             return (
               <button
+                disabled={item.id !== "manage"}
                 key={item.id}
                 onClick={() => {
                   navigate(`/home/settings/${item.id}`);
                 }}
-                className="
+                className={`" ${item.id !== "manage" ? 'cursor-not-allowed' : 'cursor-pointer'}
                   flex
                   items-center
                   gap-2
@@ -138,7 +139,7 @@ export default function Settings() {
                   hover:bg-slate-700/50
                   hover:text-slate-100
                   transition-all
-                "
+                "`}
               >
                 <Icon />
                 {item.label}

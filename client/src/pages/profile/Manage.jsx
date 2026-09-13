@@ -44,11 +44,12 @@ export default function Manage() {
           <div className="grid w-full gap-3">
             {manageItems.map((item) => (
               <button
+                disabled={item.id === 'security'}
                 key={item.id}
                 onClick={() => {
                   navigate(`/home/settings/manage/${item.id}`);
                 }}
-                className="
+                className={`" ${item.id === 'security' ? 'cursor-not-allowed' : 'cursor-pointer'}
                   w-[400px]
                   rounded-lg
                   border
@@ -57,8 +58,8 @@ export default function Manage() {
                   p-4
                   text-left
                   hover:bg-slate-800
-                  transition
-                "
+                  transition 
+                "`}
               >
                 {item.label}
               </button>
