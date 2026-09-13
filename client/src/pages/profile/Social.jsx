@@ -149,9 +149,6 @@ export default function Social() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
-          Social Link
-        </h1>
         <p className="text-slate-400">
           Create and paste links here to let people know your other social
           medias
@@ -168,7 +165,7 @@ export default function Social() {
             Create +
           </button>
         ) : (
-          <div className="mt-4 space-y-3 relative bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+          <div className="mt-4 space-y-3 relative bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
             {message && (
               <p
                 className={`py-2 border text-center rounded-xl ${
@@ -187,7 +184,7 @@ export default function Social() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Something..."
-                className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+                className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               />
 
               <p className="text-xl text-purple-400 py-4">Link</p>
@@ -196,7 +193,7 @@ export default function Social() {
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder="https://myaccountlink"
-                className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+                className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
                 />
             </div>
 
@@ -211,7 +208,7 @@ export default function Social() {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                className="px-4 py-3 bg-slate-700/50 hover:bg-slate-600 rounded-xl font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -224,7 +221,7 @@ export default function Social() {
         {socialLinks.map((social, index) => (
           <div
             key={index}
-            className="p-4 bg-slate-800 border border-slate-700 rounded-xl"
+            className="p-4 bg-slate-900/50 border border-slate-700 rounded-xl"
           >
             <div className="flex items-center justify-between gap-4">
 
@@ -257,7 +254,7 @@ export default function Social() {
                     }
                   }
                   title="Edit"
-                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
                 >
                   <Pencil size={18} />
                 </button>
@@ -267,7 +264,7 @@ export default function Social() {
                   type="button"
                   title="Delete"
                   onClick={() => handleDelete(index)}
-                  className="p-2 rounded-lg text-red-500 hover:text-red-400 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg text-red-500 hover:text-red-400 hover:bg-slate-700/50 transition-colors"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -283,7 +280,7 @@ export default function Social() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
 
           {/* Modal */}
-          <div className="w-[400px] bg-gray-800 rounded-2xl p-6 shadow-2xl">
+          <div className="w-[400px] bg-gradient-to-br from-black via-zinc-950 to-zinc-800 border border-slate-700 rounded-2xl p-6 shadow-2xl">
 
             <h2 className="text-2xl font-bold text-purple-400 mb-6">
               Edit Social Link
@@ -298,7 +295,7 @@ export default function Social() {
               type="text"
               value={editTitle}
               onChange={(e) => {setEditTitle(e.target.value)}}
-              className="w-full rounded-xl bg-gray-700 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-xl bg-gray-700/50 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-purple-500"
             />
 
             {/* Link */}
@@ -310,7 +307,7 @@ export default function Social() {
               type="text"
               value={editLink}
               onChange={(e) => {setEditLink(e.target.value)}}
-              className="w-full rounded-xl bg-gray-700 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-xl bg-gray-700/50 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-purple-500"
             />
 
             {/* Buttons */}
@@ -319,7 +316,7 @@ export default function Social() {
               <button
                 type="button"
                 onClick={() => setEdit(null)}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg"
+                className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600 rounded-lg"
               >
                 Close
               </button>
@@ -329,7 +326,7 @@ export default function Social() {
                 onClick={handleSaveEdit}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg"
               >
-                Save
+                Update
               </button>
 
             </div>

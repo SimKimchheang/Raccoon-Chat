@@ -1,14 +1,14 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../services/firebase";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import PersonalInformation from "./PersonalInformation";
-import EmailAndPassword from "./EmailAndPassword";
-import Social from "./Social";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, UserCog, SunMoon, Book } from "lucide-react";
 
 export default function Settings() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("personal");
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -24,49 +24,88 @@ export default function Settings() {
     "User";
 
   const navItems = [
-    { id: "personal", label: "Personal Information" },
-    { id: "security", label: "Email & Password" },
-    { id: "social", label: "Social Accounts" },
+    {
+      id: "manage",
+      icon: UserCog,
+      label: "Manage My Account",
+    },
+    {
+      id: "language",
+      icon: Book,
+      label: "Language",
+    },
+    {
+      id: "theme",
+      icon: SunMoon,
+      label: "Theme",
+    },
   ];
 
-  return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white lg:flex-row">
+  // Are we exactly on /home/settings?
+  const isSettingsRoot =
+    location.pathname === "/home/settings" ||
+    location.pathname === "/home/settings/";
 
-      {/* Sidebar */}
+  return (
+    <div
+      className="
+        w-full
+        min-h-screen
+        overflow-hidden
+        flex
+        flex-row
+        bg-gradient-to-br
+        from-slate-950
+        via-slate-900
+        to-slate-950
+      "
+    >
+
+      {/* =========================
+          SETTINGS SIDEBAR
+          ========================= */}
+
       <aside
-        className="
+        className={`
+          h-screen
+          bg-black
+          border-r
+          border-white
+          p-6
+          shadow-2xl
           w-full
-          border-b border-slate-700
-          bg-gradient-to-b from-slate-800 to-slate-900
-          p-4 shadow-2xl
-          lg:sticky lg:top-0 lg:h-screen
-          lg:w-72
+          lg:w-[300px]
           lg:flex-shrink-0
-          lg:border-b-0 lg:border-r
-          lg:p-6
-        "
+          overflow-y-auto
+          thin-scrollbar
+
+          ${isSettingsRoot ? "flex flex-col" : "hidden lg:flex lg:flex-col"}
+        `}
       >
+
         {/* Header */}
-        <div className="mb-5 lg:mb-8">
+
+        <div className="mb-8 px-3 flex items-center gap-2">
           <Link
-            to="/home/profile"
+            to="/home"
             className="
-              inline-flex items-center gap-2
-              text-sm text-slate-400
+              text-slate-400
               transition-colors
               hover:text-purple-400
             "
           >
-            ← Back to Profile
+            <ArrowLeft />
           </Link>
 
           <h2
             className="
-              mt-4
-              text-2xl font-bold
+              text-2xl
+              font-bold
               text-transparent
               bg-clip-text
-              bg-gradient-to-r from-purple-400 to-pink-600
+              bg-gradient-to-r
+              from-purple-400
+              to-pink-600
             "
           >
             Settings
@@ -74,55 +113,63 @@ export default function Settings() {
         </div>
 
         {/* Navigation */}
-        <nav
-          className="
-            flex gap-2 overflow-x-auto
-            pb-2
-            lg:block lg:space-y-2
-            lg:overflow-visible
-            lg:pb-0 thin-scrollbar
-          "
-        >
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`
-                flex-shrink-0
-                whitespace-nowrap
-                rounded-lg
-                px-4 py-3
-                text-left
-                font-medium
-                transition-all duration-300
 
-                lg:w-full
+        <nav className="grid gap-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
 
-                ${
-                  activeTab === item.id
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
-                    : "text-slate-300 hover:bg-slate-700/50 hover:text-slate-100"
-                }
-              `}
-            >
-              {item.label}
-            </button>
-          ))}
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  navigate(`/home/settings/${item.id}`);
+                }}
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  w-full
+                  rounded-lg
+                  px-4
+                  py-3
+                  text-left
+                  font-medium
+                  text-slate-300
+                  hover:bg-slate-700/50
+                  hover:text-slate-100
+                  transition-all
+                "
+              >
+                <Icon />
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* User Card */}
+
         <div
           className="
-            mt-5 
+            mt-8
+            w-full
+            max-w-[250px]
             rounded-lg
-            border border-slate-600
+            border
+            border-slate-600
             bg-slate-700/30
             p-4
-            backdrop-blur
-            lg:mt-8
           "
         >
-          <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">
+          <p
+            className="
+              mb-2
+              text-xs
+              uppercase
+              tracking-wider
+              text-slate-400
+            "
+          >
             Currently Logged In
           </p>
 
@@ -136,24 +183,28 @@ export default function Settings() {
         </div>
       </aside>
 
-      {/* Main Content */}
+
+      {/* =========================
+          MAIN CONTENT
+          ========================= */}
+
       <main
-        className="
+        className={`
+          flex-1
+          h-screen
           min-w-0
-          flex-1 
           overflow-y-auto
+          thin-scrollbar
+          bg-black
           p-4
-          sm:p-6
-          lg:p-10
-        "
+          animate-in
+
+          ${isSettingsRoot ? "hidden lg:block" : "block"}
+        `}
       >
-        {activeTab === "personal" && <PersonalInformation />}
-
-        {activeTab === "security" && <EmailAndPassword />}
-
-        {activeTab === "social" && <Social />}
+        <Outlet />
       </main>
+
     </div>
   );
 }
-

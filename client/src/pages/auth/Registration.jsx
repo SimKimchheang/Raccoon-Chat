@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, reload } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase.js';
+import { User, Mail, Lock, EyeClosed } from "lucide-react";
 
 export default function Registration() {
   const [username, setUsername] = useState("");
@@ -10,10 +11,18 @@ export default function Registration() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [checkEmailVerification, setCheckEmailVerification] = useState('');
+  const [verificationSent, setVerificationSent] = useState(false);
   const navigate = useNavigate();
 
   async function register(username, email, password) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, 
+      email, 
+      password
+    );
+
     const user = userCredential.user;
 
     await updateProfile(user, {
@@ -21,17 +30,49 @@ export default function Registration() {
     });
 
     await sendEmailVerification(user);
-    if(!user.emailVerified) {
-      console.log('Email verification sent to:', user.email);
+    setVerificationSent(true);
+    console.log('Email verification sent to:', user.email);
+
+  }
+
+  async function handleVerifyEmail() {
+    const user = auth.currentUser;
+
+    if (!user) {
+      setError("Please sign up first.");
       return;
     }
 
-    await setDoc(doc(db, 'users', user.uid), {
-      username,
-      email,
-      createdAt: serverTimestamp()
-    });
-    return user;
+    try {
+      setError("");
+      setCheckEmailVerification("Checking verification status...");
+
+      await reload(user);
+
+      if (user.emailVerified) {
+        setEmailVerified(true);
+        setCheckEmailVerification("Email verified successfully! 🎉");
+
+        await setDoc(doc(db, 'users', user.uid), {
+          username,
+          email,
+          createdAt: serverTimestamp()
+        });
+
+        console.log("Signup successful");
+
+        navigate("/home");
+
+      } else {
+        setEmailVerified(false);
+        setCheckEmailVerification("");
+        setError("Your email is not verified yet.");
+      }
+
+    } catch (err) {
+      console.log(err);
+      setError(err.message);
+    }
   }
 
   async function handleSubmit(e) {
@@ -52,7 +93,10 @@ export default function Registration() {
         return;
       }
       await register(username, email, password);
-      navigate("/home");
+
+      if (emailVerified) {
+        navigate('/home')
+      }
 
     } catch (err) {
         console.log(err);
@@ -94,6 +138,30 @@ export default function Registration() {
               placeholder="Enter your email" 
               className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-purple-500 text-white transition-all placeholder-gray-400"
             />
+
+            {checkEmailVerification && (
+              <p className="text-sm text-blue-400">{checkEmailVerification}</p>
+            )}
+
+            {verificationSent && !emailVerified && (
+              <p className="text-sm text-yellow-400">
+                Please check your email for a verification link.
+              </p>
+            )}
+
+            {emailVerified ? (
+              <span className="text-green-200">Email Verified</span>
+            ) : (
+              <button 
+                className="mt-2 w-[40%] py-2.5 bg-purple-600 hover:bg-purple-700 text-sm px-1 text-white font-medium rounded-lg transition-colors cursor-pointer shadow-md"
+                type="button"
+                onClick={() => {
+                  handleVerifyEmail();
+                }}
+              >
+                Check Verification             
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5 text-left">
@@ -118,7 +186,6 @@ export default function Registration() {
               />
           </div>
 
-
           {/* Submit Button */}
           <button 
               className="mt-2 w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors cursor-pointer shadow-md"
@@ -138,3 +205,9 @@ export default function Registration() {
     </div>
   );
 }
+
+// Todo: When I spam signup without verifying email, firebase gives me 2 different errors.
+// 1. "Your email is not verified yet." - This is from my own code, so the codes are working.
+// 2. "auth/email-already-in-use" - I need to figure it out why, or because the value is already passed to the database?.
+// Finally, the logic doesn't bring user to /home eventhough the user verifies their email, 
+// this means the user has to go to login page. 

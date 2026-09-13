@@ -1,8 +1,9 @@
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { use, useEffect, useState } from "react";
-import { doc, getDoc, or, setDoc } from "firebase/firestore";
-import { Pencil } from "lucide-react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function PersonalInformation() {
   const [user, setUser] = useState(null);
@@ -64,6 +65,8 @@ export default function PersonalInformation() {
       setSexSaving(false);
     }
   };
+
+  const navigate = useNavigate();
 
   const [relationshipSaving, setRelationshipSaving] = useState(false);
   const [relationshipSaved, setRelationshipSaved] = useState(false);
@@ -401,6 +404,7 @@ export default function PersonalInformation() {
 
           setSex(userData.sex || '');
           setRelationship(userData.relationship || '');
+          setEmployment(userData.employment || '');
           setBirthday(userData.birthday || '');
           setCountry(userData.country || '');
           setBio(userData.bio || '');
@@ -477,6 +481,16 @@ export default function PersonalInformation() {
     return () => clearTimeout(timer);
   }, [messageB]);
 
+  useEffect(() => {
+    if (!messageC) return;
+
+    const timer = setTimeout(() => {
+      setMessageC('');
+    }, 2000 );
+
+    return () => clearTimeout(timer);
+  }, [messageC]);
+
 
   // --------------------------- Bio -------------------------------------
   const MAX_BIO_LENGTH = 200; 
@@ -528,39 +542,41 @@ export default function PersonalInformation() {
     }
   };
 //  ------------------------- Country ----------------------------
-  const handleCountrySave = async () => {
+  const handleCountrySave = async (nextCountry = country) => {
     if (!auth.currentUser) {
       setError("You must be logged in to save your country.");
       return;
     }
 
     setError("");
+    setMessageC("");
 
     try {
       await setDoc(
         doc(db, "users", auth.currentUser.uid),
-        { country },
+        { country: nextCountry },
         { merge: true }
       );
-      setMessageC("Country saved successfully.");
+
+      setCountry(nextCountry);
+      setMessageC("Country updated successfully.");
     } catch (err) {
-      setError(err.messageC || "Failed to save country");
+      setError(err.message || "Failed to save country");
     }
   };
 
   return (
-    <div className="max-w-2xl">
+    <div 
+      className="
+        max-w-2xl pb-6">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
-          My Personal Information
-        </h1>
         <p className="text-slate-400">Manage your profile details and personal information</p>
       </div>
 
       {/* Info Cards */}
       <div className="space-y-4">
         {/* Username Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Username</label>
           <div className="mt-3 grid items-center gap-3">
             <input
@@ -574,7 +590,7 @@ export default function PersonalInformation() {
                 }
               }}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               placeholder="Enter your username"
             />
             {usernameToggle && (
@@ -612,7 +628,7 @@ export default function PersonalInformation() {
         </div>
 
         {/* Bio Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
               Bio
@@ -634,7 +650,7 @@ export default function PersonalInformation() {
             onChange={(e) => setBio(e.target.value)}
             placeholder="Tell people something about you..."
             rows={4}
-            className="thin-scrollbar w-full rounded-xl text-sm text-slate-300 border border-gray-600 bg-gray-800 px-4 py-3 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500 resize-none"
+            className="thin-scrollbar w-full rounded-xl text-sm text-slate-300 border border-gray-600 bg-gray-800/50 px-4 py-3 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500 resize-none"
           />
 
           {bioToggle && (
@@ -671,7 +687,7 @@ export default function PersonalInformation() {
 
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Email Address</label>
           <p className="text-2xl font-bold text-white mt-2 break-all">{user?.email}</p>
           <p className="text-xs text-slate-400 mt-2">
@@ -680,7 +696,7 @@ export default function PersonalInformation() {
         </div>
 
         {/* Sex Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <div className="flex items-center justify-between">
             <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
               Sex
@@ -703,7 +719,7 @@ export default function PersonalInformation() {
             <select
               value={sex}
               onChange={handleSexChange}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              className="w-full px-4 py-3 bg-gray-800/50 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
             >
               <option value="" disabled>
                 {sex ? `Current is ${sex}` : "What should we call you?"}
@@ -716,7 +732,7 @@ export default function PersonalInformation() {
         </div>
 
         {/* Relationship Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <div className="flex items-center justify-between">
             <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
               Relationship Status
@@ -739,7 +755,7 @@ export default function PersonalInformation() {
             <select
               value={relationship}
               onChange={handleRelationshipChange}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              className="w-full px-4 py-3 bg-gray-800/50 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
             >
               <option value="" disabled>
                 {relationship ? `Current is ${relationship}` : "Not set"}
@@ -760,7 +776,7 @@ export default function PersonalInformation() {
         </div>
 
         {/* Employment Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <div className="flex items-center justify-between">
             <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">
               Employment Status
@@ -783,7 +799,7 @@ export default function PersonalInformation() {
             <select
               value={employment}
               onChange={handleEmploymentChange}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              className="w-full px-4 py-3 bg-gray-800/50 text-white rounded-xl border border-gray-600 outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
             >
               <option value="" disabled>
                 {employment ? `Current is ${employment}` : "Not set"}
@@ -802,7 +818,7 @@ export default function PersonalInformation() {
 
 
         {/* Birthday Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Birthday</label>
           <div className="mt-3 grid items-center gap-3">
             <input 
@@ -815,7 +831,7 @@ export default function PersonalInformation() {
                 setOriginalBirthday(birthday);
               }}
               onChange={(e) => setBirthday(e.target.value)}
-              className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
             />
             {birthdayToggle && (
               <div className="flex gap-4 pt-2">
@@ -851,14 +867,14 @@ export default function PersonalInformation() {
           )}
         </div>  
 
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors relative">
+        <div className="bg-gray-900/50 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors relative">
           <label className="text-sm uppercase tracking-wider text-purple-400 font-semibold">Country</label>
           <div className="mt-3 flex items-center gap-3">
             <div className="relative w-full">
               <button
                 type="button"
                 onClick={() => setIsCountryMenuOpen((prev) => !prev)}
-                className="flex w-full items-center justify-between gap-3 rounded-xl border border-gray-600 bg-gray-800 px-3 py-3 text-left text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-gray-600 bg-gray-800/50 px-3 py-3 text-left text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {selectedCountry ? (
@@ -878,7 +894,7 @@ export default function PersonalInformation() {
               </button>
 
               {isCountryMenuOpen && (
-                <div className="absolute thin-scrollbar left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 shadow-2xl">
+                <div className="relative thin-scrollbar left-0 right-0 top-full  z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 shadow-2xl">
                   {countriesWithFlags.map((countryOption) => {
                     const isSelected = country === countryOption.id;
 
@@ -886,9 +902,9 @@ export default function PersonalInformation() {
                       <button
                         key={countryOption.id}
                         type="button"
-                        onClick={() => {
-                          setCountry(countryOption.id);
+                        onClick={async () => {
                           setIsCountryMenuOpen(false);
+                          await handleCountrySave(countryOption.id);
                         }}
                         className={`flex w-full items-center gap-3 px-3 py-3 text-left transition-colors ${
                           isSelected
@@ -908,14 +924,6 @@ export default function PersonalInformation() {
                 </div>
               )}
             </div>
-
-            <button
-              type="button"
-              onClick={handleCountrySave}
-              className="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-medium transition-colors whitespace-nowrap"
-            >
-              Save
-            </button>
           </div>
           {error && (
             <p className="text-red-500 text-sm mt-3">{error}</p>

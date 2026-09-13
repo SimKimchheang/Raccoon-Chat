@@ -78,16 +78,13 @@ export default function EmailAndPassword() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
-          Email & Password
-        </h1>
         <p className="text-slate-400">Manage your email and password settings</p>
       </div>
 
       {/* Info Cards */}
       <div className="space-y-4">
         {/* Change Email Card */}
-        <div className="relative bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="relative bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="pr-6 text-sm uppercase tracking-wider text-purple-400 font-semibold">Change Email Address</label>
           
           {!showEmailForm ? (
@@ -100,7 +97,7 @@ export default function EmailAndPassword() {
             </button>
           ) : (
             <form onSubmit={HandleEmailChange} className="mt-4 space-y-3">
-              <p className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+              <p className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
                 >{user?.email}
               </p>
               <input
@@ -108,14 +105,14 @@ export default function EmailAndPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="New email address"
-                className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+                className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Current password"
-                className="w-full rounded-xl border border-gray-600 bg-gray-800 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
+                className="w-full rounded-xl border border-gray-600 bg-gray-800/50 px-4 py-3 text-white outline-none transition-all duration-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 hover:border-gray-500"
               />
               <div className="flex gap-3">
                 <button
@@ -132,7 +129,7 @@ export default function EmailAndPassword() {
                     setPassword('');
                     setError('');
                   }}
-                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                  className="px-4 py-3 bg-slate-700/50 hover:bg-slate-600 rounded-xl font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -149,7 +146,7 @@ export default function EmailAndPassword() {
         </div>
 
         {/* Change Password Card */}
-        <div className="relative bg-gradient-to-br from-slate-800 to-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
+        <div className="relative bg-gray-900/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500 transition-colors">
           <label className="pr-6 text-sm uppercase tracking-wider text-purple-400 font-semibold">Change Password</label>
           
           {!showPasswordForm ? (
@@ -168,7 +165,7 @@ export default function EmailAndPassword() {
               <button
                 type="button"
                 onClick={() => setShowPasswordForm(false)}
-                className="px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                className="px-4 py-3 bg-slate-700/50 hover:bg-slate-600 rounded-xl font-medium transition-colors"
               >
                 Close
               </button>
