@@ -10,10 +10,10 @@ export default function Manage() {
       id: "personal",
       label: "Personal Information",
     },
-    {
-      id: "security",
-      label: "Email & Password",
-    },
+    // {
+    //   id: "security",
+    //   label: "Email & Password",
+    // },
     {
       id: "social",
       label: "Social Accounts",

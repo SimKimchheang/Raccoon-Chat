@@ -73,7 +73,7 @@ export default function Profile() {
   ];
 
   const setRightMenu = () => {
-    setOpenProfileMenu(!openProfileMenu);
+    setOpenProfileMenu((isOpen) => !isOpen);
   }
 
   const profileItems = [

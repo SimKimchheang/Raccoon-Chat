@@ -30,11 +30,6 @@ import { Search, HomeIcon, User2, Settings,
   UserRound, UserPlus, Rocket, Smile,
 } from 'lucide-react';
 
- 
- 
- 
- 
- 
 export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -491,6 +486,7 @@ export default function Home() {
                  key={person.id}
                  type="button"
                  onClick={() => {
+                    setOpenAnn(false);
                    const isLargeScreen = window.innerWidth >= 1024;
 
                    if (isLargeScreen) {
@@ -499,7 +495,7 @@ export default function Home() {
                      navigate(`/home/profile/${person.id}`, { replace: true });
                    }
                    setOpenLeftModal(false);
-                   setOpenAnn(false);
+                   
                  }}
                  className="
                     flex items-center gap-3
@@ -610,7 +606,10 @@ export default function Home() {
                 className="w-10 h-10 rounded-full object-cover border border-gray-700"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-2xl font-bold text-white">
+              <div
+                onClick={() => setRightMenu()}
+                className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-2xl font-bold text-white cursor-pointer"
+              >
                 {displayName.charAt(0).toUpperCase()}
               </div>
             )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -15,6 +15,20 @@ export default function Social() {
   const [edit, setEdit] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editLink, setEditLink] = useState('');
+  const successMessageTimer = useRef(null);
+
+  const showSuccessMessage = (text) => {
+    if (successMessageTimer.current) {
+      clearTimeout(successMessageTimer.current);
+    }
+
+    setMessage(text);
+    setMessageType('success');
+    successMessageTimer.current = setTimeout(() => {
+      setMessage('');
+      setMessageType('');
+    }, 2000);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -40,6 +54,14 @@ export default function Social() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (successMessageTimer.current) {
+        clearTimeout(successMessageTimer.current);
+      }
+    };
   }, []);
 
   const handleCreate = async() => {
@@ -80,8 +102,7 @@ export default function Social() {
       );
       setSocialLinks(prev => [...prev, newLink]);
 
-      setMessage("Social link created!");
-      setMessageType('success');
+      showSuccessMessage("Social link created!");
 
       setTitle('');
       setLink('');
@@ -116,8 +137,7 @@ export default function Social() {
       setSocialLinks(updatedLinks);
       setEdit(null);
 
-      setMessage("Social link updated!");
-      setMessageType("success");
+      showSuccessMessage("Social link updated!");
 
     } catch (error) {
       console.error("Failed to update:", error);
@@ -139,10 +159,9 @@ export default function Social() {
         { merge: true }
       );
       setSocialLinks(updateLinks);
-      setMessage("Social link deleted");
-      setMessageType('success');
+      showSuccessMessage("Social link deleted");
     } catch (error) {
-      console.log("Failed to delete social link:, error");
+      console.error("Failed to delete social link:", error);
     };
   }
 
