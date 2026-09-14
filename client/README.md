@@ -23,19 +23,19 @@ Raccoon Chat is a personal project created to explore and practice building a mo
 
  ### 🌐 Landing Page
 
-![Raccoon Landing Page](./screenshots/landingpage.jpg)
+![Raccoon Landing Page](./client//screenshots/landingpage.jpg)
 
 ---
 
 ### 🔐 Login
 
-![Raccoon Login](./screenshots/loginpage.jpg)
+![Raccoon Login](./client//screenshots/loginpage.jpg)
 
 ---
 
 ### 📝 Registration
 
-![Raccoon Registration](./screenshots/signup-page.jpg)
+![Raccoon Registration](./client//screenshots/signup-page.jpg)
 
 After submitting the registration form, users receive a verification email.
 They must verify their email before completing signup.
@@ -44,43 +44,43 @@ They must verify their email before completing signup.
 
 ### 🏠 Home
 
-![Raccoon Home](./screenshots/homepage.jpg)
+![Raccoon Home](./client//screenshots/homepage.jpg)
 
 ---
 
 ### 💬 Chat
 
-![Raccoon Chat](./screenshots/chat-page.jpg)
+![Raccoon Chat](./client//screenshots/chat-page.jpg)
 
 ---
 
 ### 👤 My Profile
 
-![Raccoon Profile](./screenshots/myprofilepage.jpg)
+![Raccoon Profile](./client//screenshots/myprofilepage.jpg)
 
 ---
 
 ### 👥 Social Profile
 
-![Raccoon Social Profile](./screenshots/social-profile-page.jpg)
+![Raccoon Social Profile](./client//screenshots/social-profile-page.jpg)
 
 ---
 
 ### ⚙️ Settings
 
-![Raccoon Settings](./screenshots/settingspage.jpg)
+![Raccoon Settings](./client/screenshots/settingspage.jpg)
 
 ---
 
 ### 🧑‍💻 Personal Information
 
-![Raccoon Personal Information](./screenshots/personalinfo-page.jpg)
+![Raccoon Personal Information](./client//screenshots/personalinfo-page.jpg)
 
 ---
 
 ### 🚪 Logout
 
-![Raccoon Logout](./screenshots/logout.jpg)
+![Raccoon Logout](./client//screenshots/logout.jpg)
 
 ---
 
