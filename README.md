@@ -11,11 +11,12 @@ Raccoon Chat is a personal project created to explore and practice building a mo
 1. Create an account using your username, email, and password.
 2. Click **Submit**.
 3. Raccoon sends a verification link to the email address you registered with.
-4. Check your email inbox in (Spam) and click the **verification link**.
+4. Check your email inbox in (Spam, left navigate) and click the **verification link**.
 5. Return to Raccoon and click **Signup**.
 6. If your email is verified successfully, you will be redirected to the Home page.
 
-> 📩 **Important:** After clicking Submit, check the inbox of the email address you used to register. You must verify your email before completing signup.
+> 📩 **Important:** After clicking Submit, check the inbox of the email address you used to register. Go to the field, called Spam, and then enter and click verify. You must verify your email before completing signup.
+> I made this setup to prevent from Ghost accounts in firebase. 
 
 ---
 
