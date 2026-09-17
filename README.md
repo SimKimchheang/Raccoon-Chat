@@ -356,7 +356,7 @@ Information Technology Engineering Student
 Interested in building web applications and learning through real-world projects.
 
 * GitHub: `https://github.com/SimKimchheang`
-* LinkedIn: `YOUR_LINKEDIN_URL`
+* LinkedIn: `www.linkedin.com/in/sim-kimchheang-8665ba426`
 
 ---
 
